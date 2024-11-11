@@ -2,6 +2,10 @@
 /node_modules
 /.vscode
 
+# test
+/build
+/coverage
+
 # environment variables
 .env
 .env.local
