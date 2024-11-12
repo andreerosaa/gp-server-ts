@@ -13,15 +13,21 @@ const postHealthCheckValidation = Joi.object({
 class MainController {
 	@Route('get', '/healthcheck')
 	getHealthCheck(req: Request, res: Response, next: NextFunction) {
-		logging.info('Healthcheck called successfully');
+		logging.info('Get Healthcheck called successfully');
 		return res.status(200).json({ hello: 'world!' });
 	}
 
 	@Route('post', '/healthcheck')
 	@Validate(postHealthCheckValidation)
 	postHealthCheck(req: Request, res: Response, next: NextFunction) {
-		logging.info('Healthcheck called successfully');
+		logging.info('Post Healthcheck called successfully');
 		return res.status(200).json({ hello: 'world!', ...req.body });
+	}
+
+	@Route('options', '/healthcheck')
+	optionsHealthCheck(req: Request, res: Response, next: NextFunction) {
+		logging.info('Options Healthcheck called successfully');
+		return res.status(200).json({ options: res.getHeader('access-control-allow-methods') });
 	}
 }
 
