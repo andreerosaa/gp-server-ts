@@ -1,3 +1,7 @@
 # Initializing Server
 
-run: ``` nodemon ```
+run command: `nodemon`
+
+# Testing
+
+run command: `npm run test`
