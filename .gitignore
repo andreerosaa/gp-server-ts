@@ -5,6 +5,7 @@
 # test
 /build
 /coverage
+/rest
 
 # environment variables
 .env
