@@ -71,11 +71,15 @@ export const Main = async () => {
 	logging.info('Start Cron Jobs');
 	logging.info('----------------------------------------');
 	const job = CronJob.from({
-		cronTime: '0 0 * * * *',
+		cronTime: '*/10 * * * * *',
 		onTick: async () => {
 			try {
-				const response = await axios.get(`${server.SERVER_BASE_URL}/session`);
+				const request = { date: { $lte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) } };
+
+				const response = await axios.post(`${server.SERVER_BASE_URL}/session/query`, request);
 				logging.log(response.data);
+
+				//TODO: after getting sessions older than one day, delete them
 			} catch (error) {
 				logging.error(error);
 			}
