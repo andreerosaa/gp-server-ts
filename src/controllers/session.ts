@@ -46,10 +46,10 @@ class SessionController {
 			//TODO: add format validation
 			//TODO: send generated code via sms or email
 			const findPatientRequest = { email: req.body.email };
-			const findPatientByemail = await axios.post(`${server.SERVER_BASE_URL}/patient/query`, findPatientRequest);
+			const findPatientByEmail = await axios.post(`${server.SERVER_BASE_URL}/patient/query`, findPatientRequest);
 			const updateSessionRequest = { patientId: '', status: SessionStatusEnum.PENDING };
 
-			if (!findPatientByemail.data.length) {
+			if (!findPatientByEmail.data.length) {
 				try {
 					const createPatientRequest = {
 						name: req.body.patientName,
@@ -64,7 +64,7 @@ class SessionController {
 
 					//FIXME: cleanup or separate responsibilities of this part
 					const emailMessage = `<h1> Your verification code: ${createPatientRequest.verificationCode} </h1>`;
-					const receiver = 'andreslashrosa@gmail.com';
+					const receiver = req.body.email;
 					const subject = 'NodeMailer Test 1';
 
 					const emailService = new MailService();
@@ -75,7 +75,7 @@ class SessionController {
 					return res.status(500).json(error);
 				}
 			} else {
-				updateSessionRequest.patientId = findPatientByemail.data[0]._id;
+				updateSessionRequest.patientId = findPatientByEmail.data[0]._id;
 			}
 			const updateSession = await axios.patch(`${server.SERVER_BASE_URL}/session/update/${req.params.id}`, updateSessionRequest);
 			return res.status(201).json(updateSession.data);

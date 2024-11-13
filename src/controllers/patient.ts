@@ -29,7 +29,6 @@ class PatientController {
 
 	@Route('get', '/code/:id')
 	async getVerificationCode(req: Request, res: Response, next: NextFunction) {
-		//TODO: validate request format
 		try {
 			const findPatient = await axios.get(`${server.SERVER_BASE_URL}/patient/${req.params.id}`);
 
@@ -52,7 +51,7 @@ class PatientController {
 
 			//FIXME: cleanup or separate responsibilities of this part
 			const emailMessage = `<h1> Your verification code: ${newVerificationRequest.verificationCode} </h1>`;
-			const receiver = 'andreslashrosa@gmail.com';
+			const receiver = findPatient.data.email;
 			const subject = 'NodeMailer Test New Code';
 
 			const emailService = new MailService();
