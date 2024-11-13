@@ -79,7 +79,7 @@ export const Main = async () => {
 			try {
 				logging.info('Filtering older sessions');
 
-				const request = { date: { $gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) } };
+				const request = { date: { $lte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) } };
 				const response = await axios.post(`${server.SERVER_BASE_URL}/session/query`, request);
 
 				if (response.data.length) {
