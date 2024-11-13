@@ -44,7 +44,6 @@ class SessionController {
 	async book(req: Request<any, any, IBookSession>, res: Response, next: NextFunction) {
 		try {
 			//TODO: add format validation
-			//TODO: send generated code via sms or email
 			const findPatientRequest = { email: req.body.email };
 			const findPatientByEmail = await axios.post(`${server.SERVER_BASE_URL}/patient/query`, findPatientRequest);
 			const updateSessionRequest = { patientId: '', status: SessionStatusEnum.PENDING };
