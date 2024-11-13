@@ -11,6 +11,7 @@ import { Patient } from '../models/patient';
 import { IVerifyPatient } from '../interfaces/verifyPatient';
 import { server } from '../config/config';
 import axios from 'axios';
+import { MailService } from '../services/mail';
 
 @Controller('/patient')
 class PatientController {
@@ -24,6 +25,44 @@ class PatientController {
 	@MongoGet(Patient)
 	getById(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGet);
+	}
+
+	@Route('get', '/code/:id')
+	async getVerificationCode(req: Request, res: Response, next: NextFunction) {
+		//TODO: validate request format
+		try {
+			const findPatient = await axios.get(`${server.SERVER_BASE_URL}/patient/${req.params.id}`);
+
+			if (findPatient.data.verified) {
+				return res.status(200).json({
+					message: 'Patient is already verified',
+					patient: findPatient.data
+				});
+			}
+
+			const newVerificationRequest = {
+				verificationCode: Math.floor(1000 + Math.random() * 9000),
+				expirationCode: new Date(new Date().getTime() + 5 * 60 * 1000)
+			};
+			const updateVerificationCodePatient = await axios.patch(
+				`${server.SERVER_BASE_URL}/patient/update/${req.params.id}`,
+				newVerificationRequest
+			);
+			logging.log('Verification code created sucessfully', updateVerificationCodePatient.data);
+
+			//FIXME: cleanup or separate responsibilities of this part
+			const emailMessage = `<h1> Your verification code: ${newVerificationRequest.verificationCode} </h1>`;
+			const receiver = 'andreslashrosa@gmail.com';
+			const subject = 'NodeMailer Test New Code';
+
+			const emailService = new MailService();
+			const sent: boolean = await emailService.send({ message: emailMessage, to: receiver, subject });
+			logging.log(sent ? 'Verification code created sucessfully' : 'Error sending verification code');
+			return res.status(200).json(updateVerificationCodePatient.data);
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
 	}
 
 	@Route('post')

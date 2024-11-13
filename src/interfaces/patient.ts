@@ -2,7 +2,7 @@ import { BaseModel } from './baseModel';
 
 export interface IPatient extends BaseModel {
 	name: string;
-	phoneNumber: string;
+	email: string;
 	verified: boolean;
 	verificationCode: number;
 	expirationCode: Date;

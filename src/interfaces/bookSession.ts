@@ -1,7 +1,4 @@
-import { ObjectId } from 'mongoose';
-
 export interface IBookSession {
-	phoneNumber: string;
+	email: string;
 	patientName: string;
-	sessionId: ObjectId;
 }
