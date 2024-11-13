@@ -26,5 +26,6 @@ export const mongo = {
 
 export const server = {
 	SERVER_HOSTNAME,
-	SERVER_PORT
+	SERVER_PORT,
+	SERVER_BASE_URL: `http://${SERVER_HOSTNAME}:${SERVER_PORT}`
 };

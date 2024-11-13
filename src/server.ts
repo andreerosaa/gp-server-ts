@@ -16,7 +16,6 @@ import SessionController from './controllers/session';
 import TherapistController from './controllers/therapist';
 
 export const application = express();
-export const baseUrl = 'http://' + server.SERVER_HOSTNAME + ':' + server.SERVER_PORT;
 export let httpServer: ReturnType<typeof http.createServer>;
 
 export const Main = async () => {
@@ -75,8 +74,8 @@ export const Main = async () => {
 		cronTime: '0 0 * * * *',
 		onTick: async () => {
 			try {
-				const response = await axios.get(`${baseUrl}/session`);
-				console.log(response.data);
+				const response = await axios.get(`${server.SERVER_BASE_URL}/session`);
+				logging.log(response.data);
 			} catch (error) {
 				logging.error(error);
 			}
