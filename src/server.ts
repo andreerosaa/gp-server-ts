@@ -73,6 +73,8 @@ export const Main = async () => {
 	logging.info('----------------------------------------');
 	logging.info('Start Cron Jobs');
 	logging.info('----------------------------------------');
+
+	/** DELETING OLD SESSIONS */
 	const job = CronJob.from({
 		cronTime: cron.CRON_JOB_CONFIG,
 		onTick: async () => {
@@ -103,6 +105,8 @@ export const Main = async () => {
 		timeZone: 'system'
 	});
 	job.start();
+
+	/** TODO: SENDING SESSION CONFIRMATION EMAILS */
 };
 
 export const Shutdown = (callback: any) => httpServer && httpServer.close(callback);
