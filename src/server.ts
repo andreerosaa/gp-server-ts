@@ -1,6 +1,7 @@
 import http from 'http';
 import express from 'express';
 import mongoose from 'mongoose';
+import axios from 'axios';
 import 'reflect-metadata';
 import './config/loging';
 import { loggingHandler } from './middleware/loggingHandler';
@@ -8,12 +9,14 @@ import { corsHandler } from './middleware/corsHandler';
 import { routeNotFound } from './middleware/routeNotFound';
 import { mongo, server, SERVER_HOSTNAME, SERVER_PORT } from './config/config';
 import { defineRoutes } from './modules/routes';
+import { CronJob } from 'cron';
 import MainController from './controllers/main';
 import { declareHandler } from './middleware/declareHandler';
 import SessionController from './controllers/session';
 import TherapistController from './controllers/therapist';
 
 export const application = express();
+export const baseUrl = 'http://' + server.SERVER_HOSTNAME + ':' + server.SERVER_PORT;
 export let httpServer: ReturnType<typeof http.createServer>;
 
 export const Main = async () => {
@@ -64,6 +67,24 @@ export const Main = async () => {
 		logging.info('Server Started: ' + SERVER_HOSTNAME + ':' + SERVER_PORT);
 		logging.info('----------------------------------------');
 	});
+
+	logging.info('----------------------------------------');
+	logging.info('Start Cron Jobs');
+	logging.info('----------------------------------------');
+	const job = CronJob.from({
+		cronTime: '0 0 * * * *',
+		onTick: async () => {
+			try {
+				const response = await axios.get(`${baseUrl}/session`);
+				console.log(response.data);
+			} catch (error) {
+				logging.error(error);
+			}
+		},
+		start: true,
+		timeZone: 'system'
+	});
+	job.start();
 };
 
 export const Shutdown = (callback: any) => httpServer && httpServer.close(callback);
