@@ -4,10 +4,10 @@ export const sessionSchema = new Schema(
 	{
 		date: { type: Date, required: true },
 		therapistId: { type: String, required: true },
-		patientId: { type: String, required: true },
+		patientId: { type: String },
 		durationInMinutes: { type: Number, required: true },
 		vacancies: { type: Number, required: true },
-		confirmed: { type: Boolean, required: true }
+		status: { type: Number }
 	},
 	{
 		timestamps: true

@@ -20,8 +20,8 @@ export const SERVER_PORT = process.env.SERVER_PORT ? Number(process.env.SERVER_P
 
 export const cron = {
 	CRON_JOB_PERIODICITY_HOURS,
-	// CRON_JOB_CONFIG: `* * */${CRON_JOB_PERIODICITY_HOURS} * * *`
-	CRON_JOB_CONFIG: `*/${CRON_JOB_PERIODICITY_HOURS} * * * * *` //FIXME: remove, for testing purposes only
+	CRON_JOB_CONFIG: `* * */${CRON_JOB_PERIODICITY_HOURS} * * *`
+	// CRON_JOB_CONFIG: `*/${CRON_JOB_PERIODICITY_HOURS} * * * * *` //FIXME: remove, for testing purposes only
 };
 
 export const mongo = {

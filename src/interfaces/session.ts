@@ -7,5 +7,14 @@ export interface ISession extends BaseModel {
 	patientId: ObjectId;
 	durationInMinutes: number;
 	vacancies: number;
-	confirmed: boolean;
+	status: SessionStatusEnum;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+export enum SessionStatusEnum {
+	PENDING,
+	CONFIRMED,
+	COMPLETED,
+	CANCELED
 }
