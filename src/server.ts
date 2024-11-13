@@ -7,13 +7,16 @@ import './config/loging';
 import { loggingHandler } from './middleware/loggingHandler';
 import { corsHandler } from './middleware/corsHandler';
 import { routeNotFound } from './middleware/routeNotFound';
-import { mongo, server, SERVER_HOSTNAME, SERVER_PORT } from './config/config';
+import { cron, mongo, server, SERVER_HOSTNAME, SERVER_PORT } from './config/config';
 import { defineRoutes } from './modules/routes';
 import { CronJob } from 'cron';
 import MainController from './controllers/main';
 import { declareHandler } from './middleware/declareHandler';
 import SessionController from './controllers/session';
 import TherapistController from './controllers/therapist';
+import PatientController from './controllers/patient';
+import { Session } from './models/session';
+import { ISession } from './interfaces/session';
 
 export const application = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -50,7 +53,7 @@ export const Main = async () => {
 	logging.info('----------------------------------------');
 	logging.info('Define Controller Routing');
 	logging.info('----------------------------------------');
-	defineRoutes([MainController, SessionController, TherapistController], application);
+	defineRoutes([MainController, SessionController, TherapistController, PatientController], application);
 
 	logging.info('----------------------------------------');
 	logging.info('Define Controller Routing');
@@ -71,15 +74,27 @@ export const Main = async () => {
 	logging.info('Start Cron Jobs');
 	logging.info('----------------------------------------');
 	const job = CronJob.from({
-		cronTime: '*/10 * * * * *',
+		cronTime: cron.CRON_JOB_CONFIG,
 		onTick: async () => {
 			try {
-				const request = { date: { $lte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) } };
+				logging.info('Filtering older sessions');
 
+				const request = { date: { $gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) } };
 				const response = await axios.post(`${server.SERVER_BASE_URL}/session/query`, request);
-				logging.log(response.data);
 
-				//TODO: after getting sessions older than one day, delete them
+				if (response.data.length) {
+					response.data.forEach(async (session: ISession) => {
+						try {
+							const response = await axios.delete(`${server.SERVER_BASE_URL}/session/delete/${session._id}`);
+
+							if (response.status === 200) {
+								logging.log(`Successfuly deleted session with id: ${session._id}`);
+							}
+						} catch (error) {
+							logging.error(error);
+						}
+					});
+				}
 			} catch (error) {
 				logging.error(error);
 			}

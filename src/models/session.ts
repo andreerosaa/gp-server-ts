@@ -2,7 +2,6 @@ import mongoose, { Schema } from 'mongoose';
 
 export const sessionSchema = new Schema(
 	{
-		// _id: { type: String, required: true, unique: true },
 		date: { type: Date, required: true },
 		therapistId: { type: String, required: true },
 		patientId: { type: String, required: true },
