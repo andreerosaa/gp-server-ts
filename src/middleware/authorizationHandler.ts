@@ -5,9 +5,7 @@ import { auth } from '../config/config';
 declare global {
 	namespace Express {
 		interface Request {
-			user?: {
-				userId: string;
-			};
+			username?: string;
 		}
 	}
 }
@@ -21,7 +19,7 @@ export function authorizationHandler(req: Request, res: Response, next: NextFunc
 	} else {
 		try {
 			const decoded = jwt.verify(token, auth.JWT_SECRET as jwt.Secret);
-			req.user = decoded as { userId: string };
+			req.username = decoded as string;
 			next();
 		} catch (err) {
 			logging.error({ error: err, message: 'Invalid token' });
