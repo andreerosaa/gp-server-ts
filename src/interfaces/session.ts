@@ -8,8 +8,6 @@ export interface ISession extends BaseModel {
 	durationInMinutes: number;
 	vacancies: number;
 	status: SessionStatusEnum;
-	createdAt: Date;
-	updatedAt: Date;
 }
 
 export enum SessionStatusEnum {

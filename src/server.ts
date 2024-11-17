@@ -15,8 +15,8 @@ import { declareHandler } from './middleware/declareHandler';
 import SessionController from './controllers/session';
 import TherapistController from './controllers/therapist';
 import PatientController from './controllers/patient';
-import { Session } from './models/session';
 import { ISession } from './interfaces/session';
+import UserController from './controllers/user';
 
 export const application = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -53,7 +53,7 @@ export const Main = async () => {
 	logging.info('----------------------------------------');
 	logging.info('Define Controller Routing');
 	logging.info('----------------------------------------');
-	defineRoutes([MainController, SessionController, TherapistController, PatientController], application);
+	defineRoutes([MainController, SessionController, TherapistController, PatientController, UserController], application);
 
 	logging.info('----------------------------------------');
 	logging.info('Define Controller Routing');

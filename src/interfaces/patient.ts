@@ -6,6 +6,4 @@ export interface IPatient extends BaseModel {
 	verified: boolean;
 	verificationCode: number;
 	expirationCode: Date;
-	createdAt: Date;
-	updatedAt: Date;
 }

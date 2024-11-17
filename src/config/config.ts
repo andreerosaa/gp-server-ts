@@ -6,6 +6,9 @@ dotenv.config();
 export const DEVELOPMENT = process.env.NODE_ENV === 'development';
 export const TEST = process.env.NODE_ENV === 'test';
 
+export const JWT_SECRET = process.env.JWT_SECRET;
+export const JWT_REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET;
+
 export const CRON_JOB_PERIODICITY_HOURS = process.env.CRON_JOB_PERIODICITY_HOURS || 1;
 export const CRON_JOB_START_ZERO = process.env.CRON_JOB_START_ZERO || true;
 
@@ -20,6 +23,12 @@ export const GOOGLE_PASSWORD = process.env.GOOGLE_PASSWORD || '';
 
 export const SERVER_HOSTNAME = process.env.SERVER_HOSTNAME || 'localhost';
 export const SERVER_PORT = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 3000;
+export const SERVER_CORS_ALLOWED_ORIGINS: string[] = process.env.SERVER_CORS_ALLOWED_ORIGINS?.split(', ') || [];
+
+export const auth = {
+	JWT_SECRET,
+	JWT_REFRESH_TOKEN_SECRET
+};
 
 export const cron = {
 	CRON_JOB_PERIODICITY_HOURS,
@@ -44,5 +53,6 @@ export const mail = {
 export const server = {
 	SERVER_HOSTNAME,
 	SERVER_PORT,
-	SERVER_BASE_URL: `http://${SERVER_HOSTNAME}:${SERVER_PORT}`
+	SERVER_BASE_URL: `http://${SERVER_HOSTNAME}:${SERVER_PORT}`,
+	SERVER_CORS_ALLOWED_ORIGINS
 };
