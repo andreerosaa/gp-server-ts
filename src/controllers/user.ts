@@ -6,20 +6,21 @@ import { MongoGet } from '../decorators/mongoose/get';
 import { MongoQuery } from '../decorators/mongoose/query';
 import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
-import { createUser, getUserByUsername, User } from '../models/user';
+import { createUser, getUserByUsername, updateUserById, User } from '../models/user';
 import { comparePasswords, hashPassword } from '../helpers/auth';
 import jwt from 'jsonwebtoken';
 import { auth } from '../config/config';
+import { authorizationHandler } from '../middleware/authorizationHandler';
 
 @Controller('/user')
 class UserController {
-	@Route('get')
+	@Route('get', '', authorizationHandler)
 	@MongoGetAll(User)
 	getAll(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGetAll);
 	}
 
-	@Route('get', '/:id')
+	@Route('get', '/:id', authorizationHandler)
 	@MongoGet(User)
 	getById(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGet);
@@ -85,19 +86,36 @@ class UserController {
 		}
 	}
 
-	@Route('post', '/query')
+	@Route('post', '/query', authorizationHandler)
 	@MongoQuery(User)
 	query(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoQuery);
 	}
 
-	@Route('patch', '/update/:id')
-	@MongoUpdate(User)
-	update(req: Request, res: Response, next: NextFunction) {
-		return res.status(201).json(req.mongoUpdate);
+	@Route('patch', '/update/:id', authorizationHandler)
+	async update(req: Request, res: Response, next: NextFunction) {
+		try {
+			const user = await User.findById(req.params.id);
+
+			if (!user) {
+				return res.sendStatus(404);
+			}
+
+			const { password } = req.body;
+
+			if (password) {
+				req.body.password = await hashPassword(password);
+			}
+
+			const updateUser = await updateUserById(user.id, req.body);
+			return res.status(201).json({ updateUser });
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
 	}
 
-	@Route('delete', '/delete/:id')
+	@Route('delete', '/delete/:id', authorizationHandler)
 	@MongoDelete(User)
 	delete(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json({ message: 'deleted' });

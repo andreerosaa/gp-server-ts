@@ -10,16 +10,17 @@ import { MongoDelete } from '../decorators/mongoose/delete';
 import { getPatientById, Patient, updatePatientById } from '../models/patient';
 import { IVerifyPatient } from '../interfaces/verifyPatient';
 import { MailService } from '../services/mail';
+import { authorizationHandler } from '../middleware/authorizationHandler';
 
 @Controller('/patient')
 class PatientController {
-	@Route('get')
+	@Route('get', '', authorizationHandler)
 	@MongoGetAll(Patient)
 	getAll(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGetAll);
 	}
 
-	@Route('get', '/:id')
+	@Route('get', '/:id', authorizationHandler)
 	@MongoGet(Patient)
 	getById(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGet);
@@ -65,13 +66,13 @@ class PatientController {
 		}
 	}
 
-	@Route('post')
+	@Route('post', '', authorizationHandler)
 	@MongoCreate(Patient)
 	create(req: Request, res: Response, next: NextFunction) {
 		return res.status(201).json(req.mongoCreate);
 	}
 
-	@Route('post', '/query')
+	@Route('post', '/query', authorizationHandler)
 	@MongoQuery(Patient)
 	query(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoQuery);
@@ -109,13 +110,13 @@ class PatientController {
 		}
 	}
 
-	@Route('patch', '/update/:id')
+	@Route('patch', '/update/:id', authorizationHandler)
 	@MongoUpdate(Patient)
 	update(req: Request, res: Response, next: NextFunction) {
 		return res.status(201).json(req.mongoUpdate);
 	}
 
-	@Route('delete', '/delete/:id')
+	@Route('delete', '/delete/:id', authorizationHandler)
 	@MongoDelete(Patient)
 	delete(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json({ message: 'deleted' });

@@ -14,16 +14,17 @@ import { MailService } from '../services/mail';
 import { getPatientByEmail, createPatient, getPatientById } from '../models/patient';
 import { auth } from '../config/config';
 import jwt from 'jsonwebtoken';
+import { authorizationHandler } from '../middleware/authorizationHandler';
 
 @Controller('/session')
 class SessionController {
-	@Route('get')
+	@Route('get', '', authorizationHandler)
 	@MongoGetAll(Session)
 	getAll(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGetAll);
 	}
 
-	@Route('get', '/:id')
+	@Route('get', '/:id', authorizationHandler)
 	@MongoGet(Session)
 	getById(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGet);
@@ -71,13 +72,13 @@ class SessionController {
 		}
 	}
 
-	@Route('post')
+	@Route('post', '', authorizationHandler)
 	@MongoCreate(Session)
 	create(req: Request, res: Response, next: NextFunction) {
 		return res.status(201).json(req.mongoCreate);
 	}
 
-	@Route('post', '/query')
+	@Route('post', '/query', authorizationHandler)
 	@MongoQuery(Session)
 	query(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoQuery);
@@ -147,13 +148,13 @@ class SessionController {
 		}
 	}
 
-	@Route('patch', '/update/:id')
+	@Route('patch', '/update/:id', authorizationHandler)
 	@MongoUpdate(Session)
 	update(req: Request, res: Response, next: NextFunction) {
 		return res.status(201).json(req.mongoUpdate);
 	}
 
-	@Route('delete', '/delete/:id')
+	@Route('delete', '/delete/:id', authorizationHandler)
 	@MongoDelete(Session)
 	delete(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json({ message: 'deleted' });
