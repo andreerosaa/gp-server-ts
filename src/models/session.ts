@@ -7,7 +7,8 @@ export const sessionSchema = new Schema(
 		patientId: { type: String },
 		durationInMinutes: { type: Number, required: true },
 		vacancies: { type: Number, required: true },
-		status: { type: Number }
+		status: { type: Number, required: true },
+		confirmationToken: { type: String }
 	},
 	{
 		timestamps: true

@@ -11,7 +11,9 @@ import { MongoDelete } from '../decorators/mongoose/delete';
 import { IBookSession } from '../interfaces/bookSession';
 import { SessionStatusEnum } from '../interfaces/session';
 import { MailService } from '../services/mail';
-import { getPatientByEmail, createPatient } from '../models/patient';
+import { getPatientByEmail, createPatient, getPatientById } from '../models/patient';
+import { auth } from '../config/config';
+import jwt from 'jsonwebtoken';
 
 @Controller('/session')
 class SessionController {
@@ -25,6 +27,48 @@ class SessionController {
 	@MongoGet(Session)
 	getById(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGet);
+	}
+
+	@Route('get', '/confirm/:id')
+	async confirm(req: Request, res: Response, next: NextFunction) {
+		try {
+			const { token } = req.query;
+
+			if (!token) {
+				return res.sendStatus(400);
+			}
+
+			const session = await getSessionById(req.params.id);
+
+			if (!session) {
+				return res.sendStatus(404);
+			}
+
+			if (!session.patientId || session.patientId.length === 0) {
+				return res.status(403).json({ message: 'Patient not found' });
+			} else {
+				const patient = await getPatientById(session.patientId);
+
+				if (!patient?.verified) {
+					return res.status(403).json({ message: 'Patient not verified' });
+				}
+			}
+
+			if (session.confirmationToken !== token) {
+				return res.status(400).json({ message: 'Invalid token' });
+			}
+
+			if (session.status !== SessionStatusEnum.PENDING) {
+				return res.status(403).json({ message: 'Session already confirmed or canceled' });
+			}
+
+			const updateSessionRequest = { status: SessionStatusEnum.CONFIRMED };
+			const updateSession = await updateSessionById(req.params.id, updateSessionRequest);
+			return res.status(201).json(updateSession);
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
 	}
 
 	@Route('post')
@@ -57,7 +101,12 @@ class SessionController {
 			}
 
 			const findPatientByEmail = await getPatientByEmail(email);
-			const updateSessionRequest = { patientId: '', status: SessionStatusEnum.PENDING };
+
+			const jwtExpiration = Math.floor((new Date(session.date).getTime() - Date.now()) / 1000);
+
+			const confirmationToken = jwt.sign({ patientName: patientName }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
+
+			const updateSessionRequest = { patientId: '', status: SessionStatusEnum.PENDING, confirmationToken: confirmationToken };
 
 			if (!findPatientByEmail) {
 				try {
@@ -77,7 +126,7 @@ class SessionController {
 					//FIXME: cleanup or separate responsibilities of this part
 					const emailMessage = `<h1> Your verification code: ${createPatientRequest.verificationCode} </h1>`;
 					const receiver = email;
-					const subject = 'NodeMailer Test 1';
+					const subject = 'Verification code';
 
 					const emailService = new MailService();
 					const sent: boolean = await emailService.send({ message: emailMessage, to: receiver, subject });
