@@ -19,3 +19,11 @@ export const patientSchema = new Schema(
 );
 
 export const Patient = mongoose.model('Patient', patientSchema);
+
+export const getPatients = () => Patient.find();
+export const getPatientByName = (name: string) => Patient.findOne({ name });
+export const getPatientByEmail = (email: string) => Patient.findOne({ email });
+export const getPatientById = (id: string) => Patient.findById(id);
+export const createPatient = (values: Record<string, any>) => new Patient(values).save().then((patient) => patient.toObject());
+export const deletePatientById = (id: string) => Patient.findByIdAndDelete({ _id: id });
+export const updatePatientById = (id: string, values: Record<string, any>) => Patient.findByIdAndUpdate(id, values, { new: true });

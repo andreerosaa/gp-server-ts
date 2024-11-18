@@ -15,3 +15,12 @@ export const sessionSchema = new Schema(
 );
 
 export const Session = mongoose.model('Session', sessionSchema);
+
+export const getSessions = () => Session.find();
+export const getSessionByDate = (date: Date) => Session.findOne({ date });
+export const getSessionByPatient = (patientId: string) => Session.findOne({ patientId });
+export const getSessionByTherapist = (therapistId: string) => Session.find({ therapistId });
+export const getSessionById = (id: string) => Session.findById(id);
+export const createSession = (values: Record<string, any>) => new Session(values).save().then((session) => session.toObject());
+export const deleteSessionById = (id: string) => Session.findByIdAndDelete({ _id: id });
+export const updateSessionById = (id: string, values: Record<string, any>) => Session.findByIdAndUpdate(id, values, { new: true });
