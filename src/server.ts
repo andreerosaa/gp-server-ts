@@ -6,7 +6,7 @@ import './config/logging';
 import { loggingHandler } from './middleware/loggingHandler';
 import { corsHandler } from './middleware/corsHandler';
 import { routeNotFound } from './middleware/routeNotFound';
-import { auth, cron, mongo, server, SERVER_HOSTNAME, SERVER_PORT } from './config/config';
+import { cron, mongo, server, SERVER_HOSTNAME, SERVER_PORT } from './config/config';
 import { defineRoutes } from './modules/routes';
 import { CronJob } from 'cron';
 import MainController from './controllers/main';
@@ -19,7 +19,6 @@ import { deleteSessionById, getSessionByQuery } from './models/session';
 import { SessionStatusEnum } from './interfaces/session';
 import { getPatientById } from './models/patient';
 import { MailService } from './services/mail';
-import jwt from 'jsonwebtoken';
 
 export const application = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -128,7 +127,7 @@ export const Main = async () => {
 								const patient = await getPatientById(session.patientId);
 								if (patient) {
 									const emailMessage = `<h1> Please confirm your attendance</h1>
-									<a href="${server.SERVER_BASE_URL}/session/confirm/${session.id}?token=${session.confirmationToken}">Click here to confirm your attendance</a>`;
+									<a href="${server.SERVER_BASE_URL}/session/confirm/${session.id}?token=${session.confirmationToken}">Click here to confirm</a>`;
 									const receiver = patient.email;
 									const subject = 'Confirmation email';
 									const emailService = new MailService();
