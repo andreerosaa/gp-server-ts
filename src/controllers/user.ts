@@ -31,7 +31,7 @@ class UserController {
 			const { username, password } = req.body;
 
 			if (!username || !password) {
-				return res.status(400);
+				return res.sendStatus(400);
 			}
 
 			const existingUser = await getUserByUsername(username);
@@ -60,7 +60,7 @@ class UserController {
 			const { username, password } = req.body;
 
 			if (!username || !password) {
-				return res.status(400);
+				return res.sendStatus(400);
 			}
 
 			const existingUser = await getUserByUsername(username).select('+password');

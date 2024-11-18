@@ -7,7 +7,7 @@ import { MongoCreate } from '../decorators/mongoose/create';
 import { MongoQuery } from '../decorators/mongoose/query';
 import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
-import { Patient } from '../models/patient';
+import { getPatientById, Patient, updatePatientById } from '../models/patient';
 import { IVerifyPatient } from '../interfaces/verifyPatient';
 import { server } from '../config/config';
 import axios from 'axios';
@@ -30,12 +30,16 @@ class PatientController {
 	@Route('get', '/code/:id')
 	async getVerificationCode(req: Request, res: Response, next: NextFunction) {
 		try {
-			const findPatient = await axios.get(`${server.SERVER_BASE_URL}/patient/${req.params.id}`);
+			const findPatient = await getPatientById(req.params.id);
 
-			if (findPatient.data.verified) {
-				return res.status(200).json({
+			if (!findPatient) {
+				return res.status(404).json({ message: 'Patient not found' });
+			}
+
+			if (findPatient?.verified) {
+				return res.status(403).json({
 					message: 'Patient is already verified',
-					patient: findPatient.data
+					patient: findPatient
 				});
 			}
 
@@ -43,21 +47,20 @@ class PatientController {
 				verificationCode: Math.floor(1000 + Math.random() * 9000),
 				expirationCode: new Date(new Date().getTime() + 5 * 60 * 1000)
 			};
-			const updateVerificationCodePatient = await axios.patch(
-				`${server.SERVER_BASE_URL}/patient/update/${req.params.id}`,
-				newVerificationRequest
-			);
-			logging.log('Verification code created sucessfully', updateVerificationCodePatient.data);
+
+			const updateVerificationCodePatient = await updatePatientById(req.params.id, newVerificationRequest);
+
+			logging.log('Verification code created successfully', updateVerificationCodePatient);
 
 			//FIXME: cleanup or separate responsibilities of this part
 			const emailMessage = `<h1> Your verification code: ${newVerificationRequest.verificationCode} </h1>`;
-			const receiver = findPatient.data.email;
+			const receiver = findPatient.email;
 			const subject = 'NodeMailer Test New Code';
 
 			const emailService = new MailService();
 			const sent: boolean = await emailService.send({ message: emailMessage, to: receiver, subject });
-			logging.log(sent ? 'Verification code created sucessfully' : 'Error sending verification code');
-			return res.status(200).json(updateVerificationCodePatient.data);
+			logging.log(sent ? 'Verification code created successfully' : 'Error sending verification code');
+			return res.status(200).json(updateVerificationCodePatient);
 		} catch (error) {
 			logging.error(error);
 			return res.status(500).json(error);
@@ -80,21 +83,25 @@ class PatientController {
 	async verify(req: Request<any, any, IVerifyPatient>, res: Response, next: NextFunction) {
 		//TODO: validate request format
 		try {
-			const findPatient = await axios.get(`${server.SERVER_BASE_URL}/patient/${req.params.id}`);
+			const findPatient = await getPatientById(req.params.id);
 
-			if (findPatient.data.verified) {
-				return res.status(200).json({
+			if (!findPatient) {
+				return res.status(404).json({ message: 'Patient not found' });
+			}
+
+			if (findPatient?.verified) {
+				return res.status(403).json({
 					message: 'Patient is already verified',
-					patient: findPatient.data
+					patient: findPatient
 				});
 			}
 
-			if (req.body.verificationCode === findPatient.data.verificationCode && new Date() < new Date(findPatient.data.expirationCode)) {
+			if (findPatient.expirationCode && req.body.verificationCode === findPatient.verificationCode && new Date() < findPatient.expirationCode) {
 				const verifyPatientRequest = { verified: true };
-				const verifyPatient = await axios.patch(`${server.SERVER_BASE_URL}/patient/update/${req.params.id}`, verifyPatientRequest);
+				const verifyPatient = await updatePatientById(req.params.id, verifyPatientRequest);
 
-				logging.log('Patient verified sucessfully');
-				return res.status(200).json(verifyPatient.data);
+				logging.log('Patient verified successfully');
+				return res.status(200).json(verifyPatient);
 			} else {
 				return res.status(400).json({ error: 'Invalid or expired code' });
 			}

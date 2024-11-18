@@ -46,12 +46,12 @@ class SessionController {
 			const { patientName, email } = req.body;
 
 			if (!patientName || !email) {
-				return res.status(400);
+				return res.sendStatus(400);
 			}
 
 			const session = await getSessionById(req.params.id);
 			if (!session) {
-				return res.status(404);
+				return res.sendStatus(404);
 			} else if (session.patientId) {
 				return res.status(403).json({ message: 'Session already booked' });
 			}
