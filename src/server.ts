@@ -1,7 +1,6 @@
 import http from 'http';
 import express from 'express';
 import mongoose from 'mongoose';
-import axios from 'axios';
 import 'reflect-metadata';
 import './config/loging';
 import { loggingHandler } from './middleware/loggingHandler';
