@@ -9,8 +9,6 @@ import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
 import { getPatientById, Patient, updatePatientById } from '../models/patient';
 import { IVerifyPatient } from '../interfaces/verifyPatient';
-import { server } from '../config/config';
-import axios from 'axios';
 import { MailService } from '../services/mail';
 
 @Controller('/patient')
