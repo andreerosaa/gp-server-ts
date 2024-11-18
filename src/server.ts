@@ -17,6 +17,7 @@ import TherapistController from './controllers/therapist';
 import PatientController from './controllers/patient';
 import { ISession } from './interfaces/session';
 import UserController from './controllers/user';
+import { deleteSessionById, getSessionByDate, getSessionByQuery } from './models/session';
 
 export const application = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -82,16 +83,13 @@ export const Main = async () => {
 				logging.info('Filtering older sessions');
 
 				const request = { date: { $lte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) } };
-				const response = await axios.post(`${server.SERVER_BASE_URL}/session/query`, request);
+				const response = await getSessionByQuery(request);
 
-				if (response.data.length) {
-					response.data.forEach(async (session: ISession) => {
+				if (response.length) {
+					response.forEach(async (session) => {
 						try {
-							const response = await axios.delete(`${server.SERVER_BASE_URL}/session/delete/${session._id}`);
-
-							if (response.status === 200) {
-								logging.log(`Successfuly deleted session with id: ${session._id}`);
-							}
+							await deleteSessionById(session._id.toString());
+							logging.log(`Successfully deleted session with id: ${session._id}`);
 						} catch (error) {
 							logging.error(error);
 						}
