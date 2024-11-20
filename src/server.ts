@@ -80,7 +80,7 @@ export const Main = async () => {
 
 	/** DELETING OLD SESSIONS */
 	const oldSessionsJob = CronJob.from({
-		cronTime: cron.CRON_JOB_CONFIG,
+		cronTime: cron.CRON_JOB_DELETE_SESSIONS_CONFIG,
 		onTick: async () => {
 			try {
 				logging.info('Filtering older sessions');
@@ -110,7 +110,7 @@ export const Main = async () => {
 
 	/** SENDING SESSION CONFIRMATION EMAILS */
 	const confirmSessionsJob = CronJob.from({
-		cronTime: cron.CRON_JOB_CONFIG,
+		cronTime: cron.CRON_JOB_CONFIRMATION_EMAILS_CONFIG,
 		onTick: async () => {
 			try {
 				logging.info('Sending session confirmation emails');

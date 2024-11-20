@@ -9,8 +9,8 @@ export const TEST = process.env.NODE_ENV === 'test';
 export const JWT_SECRET = process.env.JWT_SECRET;
 export const JWT_REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET;
 
-export const CRON_JOB_PERIODICITY_HOURS = process.env.CRON_JOB_PERIODICITY_HOURS || 1;
-export const CRON_JOB_START_ZERO = process.env.CRON_JOB_START_ZERO || true;
+export const CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS = process.env.CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS || 1;
+export const CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS = process.env.CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS || 1;
 
 export const MONGO_USER = process.env.MONGO_USER || '';
 export const MONGO_PASSWORD = process.env.MONGO_PASSWORD || '';
@@ -31,9 +31,12 @@ export const auth = {
 };
 
 export const cron = {
-	CRON_JOB_PERIODICITY_HOURS,
-	CRON_JOB_CONFIG: `* */${CRON_JOB_PERIODICITY_HOURS} * * * *` // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
-	// CRON_JOB_CONFIG: `*/${CRON_JOB_PERIODICITY_HOURS} * * * * *` //FIXME: remove, for testing purposes only
+	CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS,
+	CRON_JOB_DELETE_SESSIONS_CONFIG: `* */${CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS} * * * `, // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
+	// CRON_JOB_DELETE_SESSIONS_CONFIG: `*/${CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS} * * * * `, //FIXME: remove, for testing purposes only
+	CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS,
+	CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `* */${CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS} * * * ` // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
+	// CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `*/${CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS} * * * * ` //FIXME: remove, for testing purposes only
 };
 
 export const mongo = {
