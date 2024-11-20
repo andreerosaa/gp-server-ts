@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Controller } from '../decorators/controller';
 import { Route } from '../decorators/route';
 import { MongoGetAll } from '../decorators/mongoose/getAll';
-import { getSessionById, Session, updateSessionById } from '../models/session';
+import { getSessionByDate, getSessionById, getSessionByQuery, Session, updateSessionById } from '../models/session';
 import { MongoGet } from '../decorators/mongoose/get';
 import { MongoCreate } from '../decorators/mongoose/create';
 import { MongoQuery } from '../decorators/mongoose/query';
@@ -15,6 +15,7 @@ import { getPatientByEmail, createPatient, getPatientById } from '../models/pati
 import { auth } from '../config/config';
 import jwt from 'jsonwebtoken';
 import { authorizationHandler } from '../middleware/authorizationHandler';
+import { ISearchSessionByDate } from '../interfaces/searchSessionByDate';
 
 @Controller('/session')
 class SessionController {
@@ -82,6 +83,42 @@ class SessionController {
 	@MongoQuery(Session)
 	query(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoQuery);
+	}
+
+	@Route('post', '/query/date')
+	async getByDate(req: Request<any, any, ISearchSessionByDate>, res: Response, next: NextFunction) {
+		try {
+			//TODO: add format validation
+			const { date } = req.body;
+
+			if (!date) {
+				return res.sendStatus(400);
+			}
+
+			const startOfDay = new Date(date);
+			startOfDay.setUTCHours(0, 0, 0, 0);
+
+			const endOfDay = new Date(date);
+			endOfDay.setUTCHours(23, 59, 59, 999);
+
+			const request = {
+				date: {
+					$gte: startOfDay,
+					$lte: endOfDay
+				}
+			};
+
+			const sessions = await getSessionByQuery(request);
+
+			if (!sessions) {
+				return res.sendStatus(404);
+			}
+
+			return res.status(200).json(sessions);
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
 	}
 
 	@Route('post', '/book/:id')
