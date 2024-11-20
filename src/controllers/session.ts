@@ -18,7 +18,7 @@ import { authorizationHandler } from '../middleware/authorizationHandler';
 
 @Controller('/session')
 class SessionController {
-	@Route('get', '', authorizationHandler)
+	@Route('get')
 	@MongoGetAll(Session)
 	getAll(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGetAll);
