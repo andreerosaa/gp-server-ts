@@ -32,7 +32,7 @@ export const auth = {
 
 export const cron = {
 	CRON_JOB_PERIODICITY_HOURS,
-	CRON_JOB_CONFIG: `* * */${CRON_JOB_PERIODICITY_HOURS} * * *`
+	CRON_JOB_CONFIG: `* */${CRON_JOB_PERIODICITY_HOURS} * * * *` // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
 	// CRON_JOB_CONFIG: `*/${CRON_JOB_PERIODICITY_HOURS} * * * * *` //FIXME: remove, for testing purposes only
 };
 

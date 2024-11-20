@@ -77,9 +77,10 @@ class UserController {
 			}
 
 			// Generate JWT token
-			const token = jwt.sign({ username: existingUser.username }, auth.JWT_SECRET as jwt.Secret, { expiresIn: '5m' });
+			const accessToken = jwt.sign({ username: existingUser.username }, auth.JWT_SECRET as jwt.Secret, { expiresIn: '5m' });
+			const refreshToken = jwt.sign({ username: existingUser.username }, auth.JWT_REFRESH_TOKEN_SECRET as jwt.Secret, { expiresIn: '1h' });
 
-			return res.status(200).json({ accessToken: token }).end();
+			return res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken }).end();
 		} catch (error) {
 			logging.error(error);
 			return res.status(400).json({ error: error });

@@ -86,7 +86,7 @@ export const Main = async () => {
 				const request = { date: { $lte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) } };
 				const response = await getSessionByQuery(request);
 
-				if (response.length) {
+				if (response.length > 0) {
 					response.forEach(async (session) => {
 						try {
 							await deleteSessionById(session._id.toString());
@@ -96,6 +96,7 @@ export const Main = async () => {
 						}
 					});
 				}
+				return;
 			} catch (error) {
 				logging.error(error);
 			}
@@ -120,7 +121,7 @@ export const Main = async () => {
 				};
 				const response = await getSessionByQuery(request);
 
-				if (response.length) {
+				if (response.length > 0) {
 					response.forEach(async (session) => {
 						try {
 							if (session.status === SessionStatusEnum.PENDING && session.patientId && session.patientId.length > 0) {
@@ -141,6 +142,7 @@ export const Main = async () => {
 						}
 					});
 				}
+				return;
 			} catch (error) {
 				logging.error(error);
 			}
