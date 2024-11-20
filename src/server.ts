@@ -19,6 +19,7 @@ import { deleteSessionById, getSessionByQuery } from './models/session';
 import { SessionStatusEnum } from './interfaces/session';
 import { getPatientById } from './models/patient';
 import { MailService } from './services/mail';
+import { rateLimitHandler } from './middleware/rateLimitHandler';
 
 export const application = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -51,6 +52,7 @@ export const Main = async () => {
 	application.use(declareHandler);
 	application.use(loggingHandler);
 	application.use(corsHandler);
+	application.use(rateLimitHandler);
 
 	logging.info('----------------------------------------');
 	logging.info('Define Controller Routing');
