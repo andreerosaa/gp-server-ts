@@ -85,7 +85,7 @@ class SessionController {
 		return res.status(200).json(req.mongoQuery);
 	}
 
-	@Route('post', '/query/date')
+	@Route('post', '/date')
 	async getByDate(req: Request<any, any, ISearchSessionByDate>, res: Response, next: NextFunction) {
 		try {
 			//TODO: add format validation
