@@ -23,12 +23,6 @@ class MainController {
 		logging.info('Post Healthcheck called successfully');
 		return res.status(200).json({ hello: 'world!', ...req.body });
 	}
-
-	@Route('options', '/healthcheck')
-	optionsHealthCheck(req: Request, res: Response, next: NextFunction) {
-		logging.info('Options Healthcheck called successfully');
-		return res.status(200).json({ options: res.getHeader('access-control-allow-methods') });
-	}
 }
 
 export default MainController;
