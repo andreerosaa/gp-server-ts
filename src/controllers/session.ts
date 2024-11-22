@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Controller } from '../decorators/controller';
 import { Route } from '../decorators/route';
 import { MongoGetAll } from '../decorators/mongoose/getAll';
-import { getSessionByDate, getSessionById, getSessionByQuery, Session, updateSessionById } from '../models/session';
+import { getSessionById, getSessionByQuery, Session, updateSessionById } from '../models/session';
 import { MongoGet } from '../decorators/mongoose/get';
 import { MongoCreate } from '../decorators/mongoose/create';
 import { MongoQuery } from '../decorators/mongoose/query';
@@ -19,7 +19,7 @@ import { ISearchSessionByDate } from '../interfaces/searchSessionByDate';
 
 @Controller('/session')
 class SessionController {
-	@Route('get')
+	@Route('get', '', authorizationHandler)
 	@MongoGetAll(Session)
 	getAll(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGetAll);
