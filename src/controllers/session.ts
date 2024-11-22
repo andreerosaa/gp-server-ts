@@ -8,7 +8,7 @@ import { MongoCreate } from '../decorators/mongoose/create';
 import { MongoQuery } from '../decorators/mongoose/query';
 import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
-import { IBookSession } from '../interfaces/bookSession';
+import { IBookSessionRequest } from '../interfaces/bookSession';
 import { SessionStatusEnum } from '../interfaces/session';
 import { MailService } from '../services/mail';
 import { getPatientByEmail, createPatient, getPatientById } from '../models/patient';
@@ -122,7 +122,7 @@ class SessionController {
 	}
 
 	@Route('post', '/book/:id')
-	async book(req: Request<any, any, IBookSession>, res: Response, next: NextFunction) {
+	async book(req: Request<any, any, IBookSessionRequest>, res: Response, next: NextFunction) {
 		try {
 			//TODO: add format validation
 			const { patientName, email } = req.body;
@@ -146,6 +146,8 @@ class SessionController {
 
 			const updateSessionRequest = { patientId: '', status: SessionStatusEnum.PENDING, confirmationToken: confirmationToken };
 
+			let newPatient = false;
+
 			if (!findPatientByEmail) {
 				try {
 					const createPatientRequest = {
@@ -157,6 +159,7 @@ class SessionController {
 					};
 
 					const createdPatient = await createPatient(createPatientRequest);
+					newPatient = true;
 
 					logging.log('Patient created successfully', createdPatient);
 					updateSessionRequest.patientId = createdPatient._id.toString();
@@ -177,8 +180,12 @@ class SessionController {
 				updateSessionRequest.patientId = findPatientByEmail._id.toString();
 			}
 
-			const updateSession = await updateSessionById(req.params.id, updateSessionRequest);
-			return res.status(201).json(updateSession);
+			const updatedSession = await updateSessionById(req.params.id, updateSessionRequest);
+
+			return res.status(201).json({
+				session: updatedSession,
+				newPatient: newPatient
+			});
 		} catch (error) {
 			logging.error(error);
 			return res.status(500).json(error);
