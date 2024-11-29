@@ -12,6 +12,7 @@ export interface ISession extends BaseModel {
 }
 
 export enum SessionStatusEnum {
+	AVAILABLE,
 	PENDING,
 	CONFIRMED,
 	COMPLETED,

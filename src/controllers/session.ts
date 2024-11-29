@@ -60,7 +60,7 @@ class SessionController {
 				return res.status(400).json({ message: 'Invalid token' });
 			}
 
-			if (session.status !== SessionStatusEnum.PENDING) {
+			if (session.status !== SessionStatusEnum.PENDING && session.status !== SessionStatusEnum.AVAILABLE) {
 				return res.status(403).json({ message: 'Session already confirmed or canceled' });
 			}
 
