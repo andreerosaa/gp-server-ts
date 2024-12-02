@@ -19,7 +19,7 @@ export const sessionSchema = new Schema(
 export const Session = mongoose.model('Session', sessionSchema);
 
 export const getSessions = () => Session.find();
-export const getSessionByQuery = (query: Object) => Session.find({ ...query });
+export const getSessionByQuery = (query: Object) => Session.find({ ...query }).sort({ date: 1 });
 export const getSessionByDate = (date: Date) => Session.find({ date });
 export const getSessionByPatient = (patientId: string) => Session.find({ patientId });
 export const getSessionByTherapist = (therapistId: string) => Session.find({ therapistId });
