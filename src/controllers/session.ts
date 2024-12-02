@@ -159,6 +159,8 @@ class SessionController {
 				return res.sendStatus(404);
 			} else if (session.patientId) {
 				return res.status(403).json({ message: 'Session already booked' });
+			} else if (session.status !== SessionStatusEnum.AVAILABLE) {
+				return res.status(403).json({ message: 'Session is not available' });
 			}
 
 			const findPatientByEmail = await getPatientByEmail(email);
