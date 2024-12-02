@@ -11,6 +11,16 @@ export interface ISession extends BaseModel {
 	confirmationToken: string;
 }
 
+export interface ISessionByDate extends BaseModel {
+	date: Date;
+	therapist: { id: ObjectId; name: string };
+	patientId: ObjectId;
+	durationInMinutes: number;
+	vacancies: number;
+	status: SessionStatusEnum;
+	confirmationToken: string;
+}
+
 export enum SessionStatusEnum {
 	AVAILABLE,
 	PENDING,

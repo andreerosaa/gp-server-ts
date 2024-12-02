@@ -9,13 +9,14 @@ import { MongoQuery } from '../decorators/mongoose/query';
 import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
 import { IBookSessionRequest } from '../interfaces/bookSession';
-import { SessionStatusEnum } from '../interfaces/session';
+import { ISessionByDate, SessionStatusEnum } from '../interfaces/session';
 import { MailService } from '../services/mail';
 import { getPatientByEmail, createPatient, getPatientById } from '../models/patient';
 import { auth } from '../config/config';
 import jwt from 'jsonwebtoken';
 import { authorizationHandler } from '../middleware/authorizationHandler';
 import { ISearchSessionByDate } from '../interfaces/searchSessionByDate';
+import { getTherapistById } from '../models/therapist';
 
 @Controller('/session')
 class SessionController {
@@ -114,7 +115,29 @@ class SessionController {
 				return res.sendStatus(404);
 			}
 
-			return res.status(200).json(sessions);
+			if (sessions.length === 0) {
+				return res.status(200).json(sessions);
+			}
+
+			const sessionsWithTherapist = await Promise.all(
+				sessions.map(async (session) => {
+					const therapist = await getTherapistById(session.therapistId);
+					return {
+						_id: session._id,
+						date: session.date,
+						durationInMinutes: session.durationInMinutes,
+						vacancies: session.vacancies,
+						status: session.status,
+						confirmationToken: session.confirmationToken,
+						patientId: session.patientId,
+						therapist: { id: therapist?._id, name: therapist?.name },
+						createdAt: session.createdAt,
+						updatedAt: session.updatedAt
+					};
+				})
+			);
+
+			return res.status(200).json(sessionsWithTherapist);
 		} catch (error) {
 			logging.error(error);
 			return res.status(500).json(error);
