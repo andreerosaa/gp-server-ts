@@ -8,7 +8,8 @@ export const sessionSchema = new Schema(
 		durationInMinutes: { type: Number, required: true },
 		vacancies: { type: Number, required: true },
 		status: { type: Number, required: true },
-		confirmationToken: { type: String }
+		confirmationToken: { type: String },
+		cancelationToken: { type: String }
 	},
 	{
 		timestamps: true

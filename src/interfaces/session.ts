@@ -9,6 +9,7 @@ export interface ISession extends BaseModel {
 	vacancies: number;
 	status: SessionStatusEnum;
 	confirmationToken: string;
+	cancelationToken: string;
 }
 
 export interface ISessionByDate extends BaseModel {
@@ -19,6 +20,7 @@ export interface ISessionByDate extends BaseModel {
 	vacancies: number;
 	status: SessionStatusEnum;
 	confirmationToken: string;
+	cancelationToken: string;
 }
 
 export enum SessionStatusEnum {

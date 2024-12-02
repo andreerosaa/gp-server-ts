@@ -25,6 +25,9 @@ export const SERVER_HOSTNAME = process.env.SERVER_HOSTNAME || 'localhost';
 export const SERVER_PORT = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 3000;
 export const SERVER_CORS_ALLOWED_ORIGINS: string[] = process.env.SERVER_CORS_ALLOWED_ORIGINS?.split(', ') || [];
 
+export const CLIENT_HOSTNAME = process.env.CLIENT_HOSTNAME || 'localhost';
+export const CLIENT_PORT = process.env.CLIENT_PORT ? Number(process.env.CLIENT_PORT) : 4200;
+
 export const auth = {
 	JWT_SECRET,
 	JWT_REFRESH_TOKEN_SECRET
@@ -32,11 +35,11 @@ export const auth = {
 
 export const cron = {
 	CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS,
-	CRON_JOB_DELETE_SESSIONS_CONFIG: `0 */${CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS} * * * `, // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
-	// CRON_JOB_DELETE_SESSIONS_CONFIG: `*/${CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS} * * * * `, //FIXME: remove, for testing purposes only
+	// CRON_JOB_DELETE_SESSIONS_CONFIG: `0 */${CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS} * * * `, // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
+	CRON_JOB_DELETE_SESSIONS_CONFIG: `* * * * * `, //FIXME: remove, for testing purposes only every minute
 	CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS,
-	CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `0 */${CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS} * * * ` // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
-	// CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `*/${CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS} * * * * ` //FIXME: remove, for testing purposes only
+	// CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `0 */${CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS} * * * ` // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
+	CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `* * * * * ` //FIXME: remove, for testing purposes only every minute
 };
 
 export const mongo = {
@@ -58,4 +61,10 @@ export const server = {
 	SERVER_PORT,
 	SERVER_BASE_URL: `http://${SERVER_HOSTNAME}:${SERVER_PORT}`,
 	SERVER_CORS_ALLOWED_ORIGINS
+};
+
+export const client = {
+	CLIENT_HOSTNAME,
+	CLIENT_PORT,
+	CLIENT_BASE_URL: `http://${CLIENT_HOSTNAME}:${CLIENT_PORT}`
 };

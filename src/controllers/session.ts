@@ -9,10 +9,10 @@ import { MongoQuery } from '../decorators/mongoose/query';
 import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
 import { IBookSessionRequest } from '../interfaces/bookSession';
-import { ISessionByDate, SessionStatusEnum } from '../interfaces/session';
+import { SessionStatusEnum } from '../interfaces/session';
 import { MailService } from '../services/mail';
 import { getPatientByEmail, createPatient, getPatientById } from '../models/patient';
-import { auth } from '../config/config';
+import { auth, client, server } from '../config/config';
 import jwt from 'jsonwebtoken';
 import { authorizationHandler } from '../middleware/authorizationHandler';
 import { ISearchSessionByDate } from '../interfaces/searchSessionByDate';
@@ -67,7 +67,54 @@ class SessionController {
 
 			const updateSessionRequest = { status: SessionStatusEnum.CONFIRMED };
 			const updateSession = await updateSessionById(req.params.id, updateSessionRequest);
-			return res.status(201).json(updateSession);
+			return res.redirect(`${client.CLIENT_BASE_URL}/confirmed`);
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
+	}
+
+	@Route('get', '/cancel/:id')
+	async cancel(req: Request, res: Response, next: NextFunction) {
+		try {
+			const { token } = req.query;
+
+			if (!token) {
+				return res.sendStatus(400);
+			}
+
+			const session = await getSessionById(req.params.id);
+
+			if (!session) {
+				return res.sendStatus(404);
+			}
+
+			if (!session.patientId || session.patientId.length === 0) {
+				return res.status(403).json({ message: 'Patient not found' });
+			} else {
+				const patient = await getPatientById(session.patientId);
+
+				if (!patient?.verified) {
+					return res.status(403).json({ message: 'Patient not verified' });
+				}
+			}
+
+			if (session.cancelationToken !== token) {
+				return res.status(400).json({ message: 'Invalid token' });
+			}
+
+			if (session.status === SessionStatusEnum.AVAILABLE) {
+				return res.status(403).json({ message: 'Session already canceled' });
+			}
+
+			const updateSessionRequest = {
+				patientId: '',
+				confirmationToken: '',
+				cancelationToken: '',
+				status: SessionStatusEnum.AVAILABLE
+			};
+			const updateSession = await updateSessionById(req.params.id, updateSessionRequest);
+			return res.redirect(`${client.CLIENT_BASE_URL}/canceled`);
 		} catch (error) {
 			logging.error(error);
 			return res.status(500).json(error);
@@ -129,6 +176,7 @@ class SessionController {
 						vacancies: session.vacancies,
 						status: session.status,
 						confirmationToken: session.confirmationToken,
+						cancelationToken: session.cancelationToken,
 						patientId: session.patientId,
 						therapist: { id: therapist?._id, name: therapist?.name },
 						createdAt: session.createdAt,
@@ -165,15 +213,22 @@ class SessionController {
 
 			const findPatientByEmail = await getPatientByEmail(email);
 
-			const jwtExpiration = Math.floor((new Date(session.date).getTime() - Date.now()) / 1000);
+			const jwtExpiration = Math.floor((new Date(session.date).getTime() - 24 * 60 * 60 * 1000 - Date.now()) / 1000);
 
 			const confirmationToken = jwt.sign({ patientName: patientName }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
+			const cancelationToken = jwt.sign({ patientName: patientName }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
 
-			const updateSessionRequest = { patientId: '', status: SessionStatusEnum.PENDING, confirmationToken: confirmationToken };
+			const updateSessionRequest = {
+				patientId: '',
+				status: SessionStatusEnum.PENDING,
+				confirmationToken: confirmationToken,
+				cancelationToken: cancelationToken
+			};
 
 			let newPatient = false;
+			let patientEmail = '';
 
-			if (!findPatientByEmail) {
+			if (!findPatientByEmail || !findPatientByEmail.verified) {
 				try {
 					const createPatientRequest = {
 						name: patientName,
@@ -190,22 +245,55 @@ class SessionController {
 					updateSessionRequest.patientId = createdPatient._id.toString();
 
 					//FIXME: cleanup or separate responsibilities of this part
-					const emailMessage = `<h1> Your verification code: ${createPatientRequest.verificationCode} </h1>`;
+					const emailMessage = `
+						<h1> Ginásio Palmeiras </h1>
+						<p> O seu código de verificação é: ${createPatientRequest.verificationCode} </p>
+					`;
 					const receiver = email;
-					const subject = 'Verification code';
+					patientEmail = email;
+					const subject = `Código de verificação: ${createPatientRequest.verificationCode}`;
 
 					const emailService = new MailService();
 					const sent: boolean = await emailService.send({ message: emailMessage, to: receiver, subject });
-					logging.log(sent ? 'Verification code created successfully' : 'Error sending verification code');
+					if (sent) {
+						logging.log('Verification code created successfully');
+					} else {
+						logging.log('Error sending verification code');
+						return res.status(500).json({ message: 'Error sending verification code' });
+					}
 				} catch (error) {
 					logging.error(error);
 					return res.status(500).json(error);
 				}
 			} else {
 				updateSessionRequest.patientId = findPatientByEmail._id.toString();
+				patientEmail = findPatientByEmail.email;
 			}
 
 			const updatedSession = await updateSessionById(req.params.id, updateSessionRequest);
+
+			if (!updatedSession) {
+				return res.status(500).json({ message: 'Error updating session' });
+			}
+
+			//FIXME: remove from here
+			const emailMessage = `
+				<h1> Ginásio Palmeiras </h1>
+				<h1> Sessão de ${updatedSession.date.toLocaleDateString()} às ${updatedSession.date.toLocaleTimeString()} </h1>
+				<p> Por favor confirme a sua presença</p>
+				<p><a href="${server.SERVER_BASE_URL}/session/confirm/${updatedSession.id}?token=${updatedSession.confirmationToken}">Clique para confirmar</a></p>
+				<p><a href="${server.SERVER_BASE_URL}/session/cancel/${updatedSession.id}?token=${updatedSession.cancelationToken}">Clique para cancelar</a></p>
+			`;
+			const receiver = patientEmail;
+			const subject = 'Email de confirmação';
+			const emailService = new MailService();
+
+			const sent: boolean = await emailService.send({ message: emailMessage, to: receiver, subject });
+			if (sent) {
+				logging.log('Confirmation email sent successfully');
+			} else {
+				logging.log('Error sending confirmation email');
+			}
 
 			return res.status(201).json({
 				session: updatedSession,
