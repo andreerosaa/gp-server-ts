@@ -7,8 +7,8 @@ import { MongoCreate } from '../decorators/mongoose/create';
 import { MongoQuery } from '../decorators/mongoose/query';
 import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
-import { getPatientById, Patient, updatePatientById } from '../models/patient';
-import { IVerifyPatient } from '../interfaces/verifyPatient';
+import { getPatientByEmail, getPatientById, Patient, updatePatientById } from '../models/patient';
+import { IGetPatientByEmail, IUpdatePatientName, IVerifyPatient } from '../interfaces/verifyPatient';
 import { MailService } from '../services/mail';
 import { authorizationHandler } from '../middleware/authorizationHandler';
 
@@ -52,9 +52,12 @@ class PatientController {
 			logging.log('Verification code created successfully', updateVerificationCodePatient);
 
 			//FIXME: cleanup or separate responsibilities of this part
-			const emailMessage = `<h1> Your verification code: ${newVerificationRequest.verificationCode} </h1>`;
+			const emailMessage = `
+						<h1> Ginásio Palmeiras </h1>
+						<p> O seu código de verificação é: ${newVerificationRequest.verificationCode} </p>
+					`;
 			const receiver = findPatient.email;
-			const subject = 'NodeMailer Test New Code';
+			const subject = `Código de verificação: ${newVerificationRequest.verificationCode}`;
 
 			const emailService = new MailService();
 			const sent: boolean = await emailService.send({ message: emailMessage, to: receiver, subject });
@@ -66,7 +69,7 @@ class PatientController {
 		}
 	}
 
-	@Route('post', '', authorizationHandler)
+	@Route('post')
 	@MongoCreate(Patient)
 	create(req: Request, res: Response, next: NextFunction) {
 		return res.status(201).json(req.mongoCreate);
@@ -104,6 +107,62 @@ class PatientController {
 			} else {
 				return res.status(400).json({ error: 'Invalid or expired code' });
 			}
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
+	}
+
+	@Route('post', '/name/:id')
+	async updatePatientName(req: Request<any, any, IUpdatePatientName>, res: Response, next: NextFunction) {
+		try {
+			//TODO: add format validation
+			const { name, email } = req.body;
+
+			if (!name || !email) {
+				return res.sendStatus(400);
+			}
+
+			const findPatient = await getPatientByEmail(email);
+
+			if (!findPatient) {
+				return res.status(404).json({ message: 'Patient not found' });
+			}
+
+			const updatePatientRequest = {
+				name: name,
+				email: email,
+				verified: false,
+				verificationCode: Math.floor(1000 + Math.random() * 9000),
+				expirationCode: new Date(new Date().getTime() + 5 * 60 * 1000)
+			};
+
+			const updatedPatient = await updatePatientById(findPatient._id.toString(), updatePatientRequest);
+
+			return res.status(200).json(updatedPatient);
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
+	}
+
+	@Route('post', '/email')
+	async getPatientByEmail(req: Request<any, any, IGetPatientByEmail>, res: Response, next: NextFunction) {
+		try {
+			//TODO: add format validation
+			const { email } = req.body;
+
+			if (!email) {
+				return res.sendStatus(400);
+			}
+
+			const findPatient = await getPatientByEmail(email);
+
+			if (!findPatient) {
+				return res.status(404).json({ message: 'Patient not found' });
+			}
+
+			return res.status(200).json(findPatient);
 		} catch (error) {
 			logging.error(error);
 			return res.status(500).json(error);

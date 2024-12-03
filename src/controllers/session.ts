@@ -11,7 +11,7 @@ import { MongoDelete } from '../decorators/mongoose/delete';
 import { IBookSessionRequest } from '../interfaces/bookSession';
 import { SessionStatusEnum } from '../interfaces/session';
 import { MailService } from '../services/mail';
-import { getPatientByEmail, createPatient, getPatientById } from '../models/patient';
+import { getPatientByEmail, createPatient, getPatientById, updatePatientById } from '../models/patient';
 import { auth, client, server } from '../config/config';
 import jwt from 'jsonwebtoken';
 import { authorizationHandler } from '../middleware/authorizationHandler';
@@ -238,7 +238,12 @@ class SessionController {
 						expirationCode: new Date(new Date().getTime() + 5 * 60 * 1000)
 					};
 
-					const createdPatient = await createPatient(createPatientRequest);
+					if (!findPatientByEmail) {
+						var createdPatient: any = await createPatient(createPatientRequest);
+					} else {
+						var createdPatient: any = await updatePatientById(findPatientByEmail._id.toString(), createPatientRequest);
+					}
+
 					newPatient = true;
 
 					logging.log('Patient created successfully', createdPatient);
@@ -277,13 +282,15 @@ class SessionController {
 			}
 
 			//FIXME: remove from here
-			const emailMessage = `
-				<h1> Ginásio Palmeiras </h1>
-				<h1> Sessão de ${updatedSession.date.toLocaleDateString()} às ${updatedSession.date.toLocaleTimeString()} </h1>
+			const emailMessage = `<h1> Ginásio Palmeiras </h1>
+				<h3> Sessão de ${updatedSession.date.toLocaleDateString()} às ${updatedSession.date.toLocaleTimeString()}</h3>
 				<p> Por favor confirme a sua presença</p>
-				<p><a href="${server.SERVER_BASE_URL}/session/confirm/${updatedSession.id}?token=${updatedSession.confirmationToken}">Clique para confirmar</a></p>
-				<p><a href="${server.SERVER_BASE_URL}/session/cancel/${updatedSession.id}?token=${updatedSession.cancelationToken}">Clique para cancelar</a></p>
-			`;
+				<p>
+					<button><a href="${server.SERVER_BASE_URL}/session/confirm/${updatedSession.id}?token=${updatedSession.confirmationToken}">
+						Clique para confirmar
+					</a><button>
+					<a href="${server.SERVER_BASE_URL}/session/cancel/${updatedSession.id}?token=${updatedSession.cancelationToken}">Clique para cancelar</a>
+				</p>`;
 			const receiver = patientEmail;
 			const subject = 'Email de confirmação';
 			const emailService = new MailService();
