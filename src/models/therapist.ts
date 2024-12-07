@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import mongoose, { Schema } from 'mongoose';
 
 export const therapistSchema = new Schema(
@@ -17,3 +18,7 @@ export const getTherapistById = (id: string) => Therapist.findById(id);
 export const createTherapist = (values: Record<string, any>) => new Therapist(values).save().then((user) => user.toObject());
 export const deleteTherapistById = (id: string) => Therapist.findByIdAndDelete({ _id: id });
 export const updateTherapistById = (id: string, values: Record<string, any>) => Therapist.findByIdAndUpdate(id, values, { new: true });
+
+export const therapistValidation = Joi.object({
+	name: Joi.string().required()
+});

@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import mongoose, { Schema } from 'mongoose';
 
 export const sessionSchema = new Schema(
@@ -27,3 +28,14 @@ export const getSessionById = (id: string) => Session.findById(id);
 export const createSession = (values: Record<string, any>) => new Session(values).save().then((session) => session.toObject());
 export const deleteSessionById = (id: string) => Session.findByIdAndDelete({ _id: id });
 export const updateSessionById = (id: string, values: Record<string, any>) => Session.findByIdAndUpdate(id, values, { new: true });
+
+export const sessionValidation = Joi.object({
+	date: Joi.date().required(),
+	therapistId: Joi.string().id().required(),
+	patientId: Joi.string().id(),
+	durationInMinutes: Joi.number().required(),
+	vacancies: Joi.number().required(),
+	status: Joi.number().required(),
+	confirmationToken: Joi.string(),
+	cancelationToken: Joi.string()
+});
