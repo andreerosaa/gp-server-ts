@@ -8,14 +8,12 @@ import { MongoCreate } from '../decorators/mongoose/create';
 import { MongoQuery } from '../decorators/mongoose/query';
 import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
-import { IBookSessionRequest } from '../interfaces/bookSession';
-import { SessionStatusEnum } from '../interfaces/session';
+import { IBookSessionRequest, ISearchSessionByDate, SessionStatusEnum } from '../interfaces/session';
 import { MailService } from '../services/mail';
 import { getPatientByEmail, getPatientById } from '../models/patient';
 import { auth, client, server } from '../config/config';
 import jwt from 'jsonwebtoken';
 import { authorizationHandler } from '../middleware/authorizationHandler';
-import { ISearchSessionByDate } from '../interfaces/searchSessionByDate';
 import { getTherapistById } from '../models/therapist';
 
 @Controller('/session')

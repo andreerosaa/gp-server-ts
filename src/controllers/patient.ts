@@ -8,9 +8,9 @@ import { MongoQuery } from '../decorators/mongoose/query';
 import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
 import { getPatientByEmail, getPatientById, Patient, updatePatientById } from '../models/patient';
-import { IGetPatientByEmail, IUpdatePatientName, IVerifyPatient } from '../interfaces/verifyPatient';
 import { MailService } from '../services/mail';
 import { authorizationHandler } from '../middleware/authorizationHandler';
+import { IGetPatientByEmail, IUpdatePatientName, IVerifyPatient } from '../interfaces/patient';
 
 @Controller('/patient')
 class PatientController {

@@ -23,6 +23,15 @@ export interface ISessionByDate extends BaseModel {
 	cancelationToken: string;
 }
 
+export interface IBookSessionRequest {
+	email: string;
+	patientName: string;
+}
+
+export interface ISearchSessionByDate {
+	date: Date;
+}
+
 export enum SessionStatusEnum {
 	AVAILABLE,
 	PENDING,

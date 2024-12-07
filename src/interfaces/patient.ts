@@ -7,3 +7,15 @@ export interface IPatient extends BaseModel {
 	verificationCode: number;
 	expirationCode: Date;
 }
+
+export interface IVerifyPatient {
+	verificationCode: number;
+}
+export interface IGetPatientByEmail {
+	email: string;
+}
+
+export interface IUpdatePatientName {
+	name: string;
+	email: string;
+}
