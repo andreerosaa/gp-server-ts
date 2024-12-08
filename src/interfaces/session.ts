@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongoose';
 import { BaseModel } from './baseModel';
+import Joi, { date } from 'joi';
 
 export interface ISession extends BaseModel {
 	date: Date;
@@ -28,9 +29,18 @@ export interface IBookSessionRequest {
 	patientName: string;
 }
 
+export const bookSessionRequestValidationn = Joi.object({
+	email: Joi.string().email().required(),
+	patientName: Joi.string().required()
+});
+
 export interface ISearchSessionByDate {
 	date: Date;
 }
+
+export const searchSessionByDateRequestValidationn = Joi.object({
+	date: Joi.date().required()
+});
 
 export enum SessionStatusEnum {
 	AVAILABLE,
