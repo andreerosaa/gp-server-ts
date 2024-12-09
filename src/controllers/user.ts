@@ -4,13 +4,13 @@ import { Route } from '../decorators/route';
 import { MongoGetAll } from '../decorators/mongoose/getAll';
 import { MongoGet } from '../decorators/mongoose/get';
 import { MongoQuery } from '../decorators/mongoose/query';
-import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
-import { createUser, getUserByUsername, updateUserById, User } from '../models/user';
+import { createUser, getUserByUsername, updateUserById, User, userValidation } from '../models/user';
 import { comparePasswords, hashPassword } from '../helpers/auth';
 import jwt from 'jsonwebtoken';
 import { auth } from '../config/config';
 import { authorizationHandler } from '../middleware/authorizationHandler';
+import { Validate } from '../decorators/validate';
 
 @Controller('/user')
 class UserController {
@@ -27,6 +27,7 @@ class UserController {
 	}
 
 	@Route('post', '/register')
+	@Validate(userValidation)
 	async register(req: Request, res: Response, next: NextFunction) {
 		try {
 			const { username, password } = req.body;
@@ -56,6 +57,7 @@ class UserController {
 	}
 
 	@Route('post', '/login')
+	@Validate(userValidation)
 	async login(req: Request, res: Response, next: NextFunction) {
 		try {
 			const { username, password } = req.body;

@@ -29,7 +29,7 @@ export interface IBookSessionRequest {
 	patientName: string;
 }
 
-export const bookSessionRequestValidationn = Joi.object({
+export const bookSessionRequestValidation = Joi.object({
 	email: Joi.string().email().required(),
 	patientName: Joi.string().required()
 });
@@ -38,7 +38,7 @@ export interface ISearchSessionByDate {
 	date: Date;
 }
 
-export const searchSessionByDateRequestValidationn = Joi.object({
+export const searchSessionByDateRequestValidation = Joi.object({
 	date: Joi.date().required()
 });
 

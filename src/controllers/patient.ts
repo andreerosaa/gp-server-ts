@@ -10,7 +10,14 @@ import { MongoDelete } from '../decorators/mongoose/delete';
 import { getPatientByEmail, getPatientById, Patient, updatePatientById } from '../models/patient';
 import { MailService } from '../services/mail';
 import { authorizationHandler } from '../middleware/authorizationHandler';
-import { IGetPatientByEmail, IUpdatePatientName, IVerifyPatient } from '../interfaces/patient';
+import {
+	getPatientByEmailRequestValidation,
+	IGetPatientByEmail,
+	IUpdatePatientName,
+	IVerifyPatient,
+	updatePatientNameRequestValidation
+} from '../interfaces/patient';
+import { Validate } from '../decorators/validate';
 
 @Controller('/patient')
 class PatientController {
@@ -114,9 +121,9 @@ class PatientController {
 	}
 
 	@Route('post', '/name/:id')
+	@Validate(updatePatientNameRequestValidation)
 	async updatePatientName(req: Request<any, any, IUpdatePatientName>, res: Response, next: NextFunction) {
 		try {
-			//TODO: add format validation
 			const { name, email } = req.body;
 
 			if (!name || !email) {
@@ -147,9 +154,9 @@ class PatientController {
 	}
 
 	@Route('post', '/email')
+	@Validate(getPatientByEmailRequestValidation)
 	async getPatientByEmail(req: Request<any, any, IGetPatientByEmail>, res: Response, next: NextFunction) {
 		try {
-			//TODO: add format validation
 			const { email } = req.body;
 
 			if (!email) {

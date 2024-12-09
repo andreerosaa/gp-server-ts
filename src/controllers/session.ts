@@ -8,13 +8,20 @@ import { MongoCreate } from '../decorators/mongoose/create';
 import { MongoQuery } from '../decorators/mongoose/query';
 import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
-import { IBookSessionRequest, ISearchSessionByDate, SessionStatusEnum } from '../interfaces/session';
+import {
+	bookSessionRequestValidation,
+	IBookSessionRequest,
+	ISearchSessionByDate,
+	searchSessionByDateRequestValidation,
+	SessionStatusEnum
+} from '../interfaces/session';
 import { MailService } from '../services/mail';
 import { getPatientByEmail, getPatientById } from '../models/patient';
 import { auth, client, server } from '../config/config';
 import jwt from 'jsonwebtoken';
 import { authorizationHandler } from '../middleware/authorizationHandler';
 import { getTherapistById } from '../models/therapist';
+import { Validate } from '../decorators/validate';
 
 @Controller('/session')
 class SessionController {
@@ -136,9 +143,9 @@ class SessionController {
 	}
 
 	@Route('post', '/date')
+	@Validate(searchSessionByDateRequestValidation)
 	async getByDate(req: Request<any, any, ISearchSessionByDate>, res: Response, next: NextFunction) {
 		try {
-			//TODO: add format validation
 			const { date } = req.body;
 
 			if (!date) {
@@ -195,9 +202,9 @@ class SessionController {
 	}
 
 	@Route('post', '/book/:id')
+	@Validate(bookSessionRequestValidation)
 	async book(req: Request<any, any, IBookSessionRequest>, res: Response, next: NextFunction) {
 		try {
-			//TODO: add format validation
 			const { patientName, email } = req.body;
 
 			if (!patientName || !email) {
