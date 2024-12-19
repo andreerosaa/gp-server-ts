@@ -81,6 +81,6 @@ export const Main = async () => {
 	confirmSessionsJob.start();
 };
 
-export const Shutdown = (callback: any) => httpServer && httpServer.close(callback);
+export const Shutdown = (callback: any) => httpServer?.close(callback);
 
 Main();
