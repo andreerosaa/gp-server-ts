@@ -8,7 +8,7 @@ import { MongoDelete } from '../decorators/mongoose/delete';
 import { createUser, getUserByUsername, updateUserById, User, userValidation } from '../models/user';
 import { comparePasswords, hashPassword } from '../helpers/auth';
 import jwt from 'jsonwebtoken';
-import { auth } from '../config/config';
+import { auth, PRODUCTION } from '../config/config';
 import { authorizationHandler } from '../middleware/authorizationHandler';
 import { Validate } from '../decorators/validate';
 
@@ -82,7 +82,15 @@ class UserController {
 			const accessToken = jwt.sign({ username: existingUser.username }, auth.JWT_SECRET as jwt.Secret, { expiresIn: '5m' });
 			const refreshToken = jwt.sign({ username: existingUser.username }, auth.JWT_REFRESH_TOKEN_SECRET as jwt.Secret, { expiresIn: '1h' });
 
-			return res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken }).end();
+			// Set the refresh token as an HTTP-only cookie
+			res.cookie('refreshToken', refreshToken, {
+				httpOnly: true,
+				secure: PRODUCTION, // secure if in production
+				sameSite: 'strict',
+				maxAge: 60 * 60 * 1000 // 1h
+			});
+
+			return res.status(200).json({ accessToken: accessToken }).end();
 		} catch (error) {
 			logging.error(error);
 			return res.status(400).json({ error: error });

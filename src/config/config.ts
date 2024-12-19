@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 dotenv.config();
 
 export const DEVELOPMENT = process.env.NODE_ENV === 'development';
+export const PRODUCTION = process.env.NODE_ENV === 'production';
 export const TEST = process.env.NODE_ENV === 'test';
 
 export const JWT_SECRET = process.env.JWT_SECRET;
