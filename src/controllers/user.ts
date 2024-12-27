@@ -7,7 +7,7 @@ import { MongoQuery } from '../decorators/mongoose/query';
 import { MongoDelete } from '../decorators/mongoose/delete';
 import { createUser, getUserByUsername, updateUserById, User, userValidation } from '../models/user';
 import { comparePasswords, hashPassword } from '../helpers/auth';
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { auth, PRODUCTION } from '../config/config';
 import { authorizationHandler } from '../middleware/authorizationHandler';
 import { Validate } from '../decorators/validate';
