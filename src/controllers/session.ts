@@ -186,7 +186,6 @@ class SessionController {
 						status: session.status,
 						confirmationToken: session.confirmationToken,
 						cancelationToken: session.cancelationToken,
-						patientId: session.patientId,
 						therapist: { id: therapist?._id, name: therapist?.name },
 						createdAt: session.createdAt,
 						updatedAt: session.updatedAt
@@ -195,6 +194,88 @@ class SessionController {
 			);
 
 			return res.status(200).json(sessionsWithTherapist);
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
+	}
+
+	@Route('post', '/date-detailed')
+	@Validate(searchSessionByDateRequestValidation)
+	async getByDateDetailed(req: Request<any, any, ISearchSessionByDate>, res: Response, next: NextFunction) {
+		try {
+			const { date } = req.body;
+
+			if (!date) {
+				return res.sendStatus(400);
+			}
+
+			const startOfDay = new Date(date);
+			startOfDay.setUTCHours(0, 0, 0, 0);
+
+			const endOfDay = new Date(date);
+			endOfDay.setUTCHours(23, 59, 59, 999);
+
+			const request = {
+				date: {
+					$gte: startOfDay,
+					$lte: endOfDay
+				}
+			};
+
+			const sessions = await getSessionByQuery(request);
+
+			if (!sessions) {
+				return res.sendStatus(404);
+			}
+
+			if (sessions.length === 0) {
+				return res.status(200).json(sessions);
+			}
+
+			const sessionsWithTherapist = await Promise.all(
+				sessions.map(async (session) => {
+					const therapist = await getTherapistById(session.therapistId);
+					return {
+						_id: session._id,
+						date: session.date,
+						durationInMinutes: session.durationInMinutes,
+						vacancies: session.vacancies,
+						status: session.status,
+						confirmationToken: session.confirmationToken,
+						cancelationToken: session.cancelationToken,
+						patientId: session.patientId,
+						therapist: { id: therapist?._id, name: therapist?.name },
+						createdAt: session.createdAt,
+						updatedAt: session.updatedAt
+					};
+				})
+			);
+
+			const sessionsDetailed = await Promise.all(
+				sessionsWithTherapist.map(async (session) => {
+					let patient = null;
+
+					if (session.patientId) {
+						patient = await getPatientById(session.patientId);
+					}
+					return {
+						_id: session._id,
+						date: session.date,
+						durationInMinutes: session.durationInMinutes,
+						vacancies: session.vacancies,
+						status: session.status,
+						confirmationToken: session.confirmationToken,
+						cancelationToken: session.cancelationToken,
+						patient: patient ? { id: patient?._id, name: patient?.name, email: patient?.email } : {},
+						therapist: session.therapist,
+						createdAt: session.createdAt,
+						updatedAt: session.updatedAt
+					};
+				})
+			);
+
+			return res.status(200).json(sessionsDetailed);
 		} catch (error) {
 			logging.error(error);
 			return res.status(500).json(error);
