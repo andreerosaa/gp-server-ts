@@ -16,6 +16,7 @@ import PatientController from './controllers/patient';
 import UserController from './controllers/user';
 import { rateLimitHandler } from './middleware/rateLimitHandler';
 import { confirmSessionsJob, oldSessionsJob } from './jobs/session';
+import cookieParser from 'cookie-parser';
 
 export const application = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -45,6 +46,7 @@ export const Main = async () => {
 	logging.info('----------------------------------------');
 	logging.info('Logging and Configuration');
 	logging.info('----------------------------------------');
+	application.use(cookieParser());
 	application.use(declareHandler);
 	application.use(loggingHandler);
 	application.use(corsHandler);

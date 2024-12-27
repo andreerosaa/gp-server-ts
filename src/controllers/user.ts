@@ -7,7 +7,7 @@ import { MongoQuery } from '../decorators/mongoose/query';
 import { MongoDelete } from '../decorators/mongoose/delete';
 import { createUser, getUserByUsername, updateUserById, User, userValidation } from '../models/user';
 import { comparePasswords, hashPassword } from '../helpers/auth';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { auth, PRODUCTION } from '../config/config';
 import { authorizationHandler } from '../middleware/authorizationHandler';
 import { Validate } from '../decorators/validate';
@@ -87,7 +87,7 @@ class UserController {
 				httpOnly: true,
 				secure: PRODUCTION, // secure if in production
 				sameSite: 'strict',
-				maxAge: 60 * 60 * 1000 // 1h
+				maxAge: 60 * 60 * 1000 // 1h,
 			});
 
 			return res.status(200).json({ accessToken: accessToken }).end();
@@ -97,7 +97,7 @@ class UserController {
 		}
 	}
 
-	@Route('post', '/logout', authorizationHandler)
+	@Route('post', '/logout')
 	logout(req: Request, res: Response, next: NextFunction) {
 		try {
 			res.clearCookie('refreshToken', {
@@ -106,6 +106,30 @@ class UserController {
 				sameSite: 'strict'
 			});
 			return res.status(200).json({ message: 'Logged out successfully' });
+		} catch (error) {
+			logging.error(error);
+			return res.status(400).json({ error: error });
+		}
+	}
+
+	@Route('post', '/refresh')
+	refreshToken(req: Request, res: Response, next: NextFunction) {
+		try {
+			const { refreshToken } = req.cookies;
+
+			if (!refreshToken) {
+				return res.status(401).json({ message: 'Refresh token not found' });
+			}
+
+			const verifyRefreshToken = <{ username: string }>jwt.verify(refreshToken, auth.JWT_REFRESH_TOKEN_SECRET as jwt.Secret);
+
+			if (!verifyRefreshToken) {
+				return res.status(403).json({ message: 'Invalid refresh token' });
+			}
+
+			const accessToken = jwt.sign({ username: verifyRefreshToken.username }, auth.JWT_SECRET as jwt.Secret, { expiresIn: '5m' });
+
+			return res.status(200).json({ accessToken: accessToken }).end();
 		} catch (error) {
 			logging.error(error);
 			return res.status(400).json({ error: error });
