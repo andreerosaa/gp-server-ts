@@ -17,6 +17,7 @@ import UserController from './controllers/user';
 import { rateLimitHandler } from './middleware/rateLimitHandler';
 import { confirmSessionsJob, oldSessionsJob } from './jobs/session';
 import cookieParser from 'cookie-parser';
+import SeriesController from './controllers/series';
 
 export const application = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -55,7 +56,7 @@ export const Main = async () => {
 	logging.info('----------------------------------------');
 	logging.info('Define Controller Routing');
 	logging.info('----------------------------------------');
-	defineRoutes([MainController, SessionController, TherapistController, PatientController, UserController], application);
+	defineRoutes([MainController, SessionController, TherapistController, PatientController, UserController, SeriesController], application);
 
 	logging.info('----------------------------------------');
 	logging.info('Define Controller Routing');

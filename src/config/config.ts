@@ -29,6 +29,8 @@ export const SERVER_CORS_ALLOWED_ORIGINS: string[] = process.env.SERVER_CORS_ALL
 export const CLIENT_HOSTNAME = process.env.CLIENT_HOSTNAME || 'localhost';
 export const CLIENT_PORT = process.env.CLIENT_PORT ? Number(process.env.CLIENT_PORT) : 4200;
 
+export const SESSION_SERIES_LENGTH = process.env.SESSION_SERIES_LENGTH ? Number(process.env.SESSION_SERIES_LENGTH) : 365;
+
 export const auth = {
 	JWT_SECRET,
 	JWT_REFRESH_TOKEN_SECRET

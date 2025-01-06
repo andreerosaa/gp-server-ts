@@ -9,6 +9,7 @@ export const sessionSchema = new Schema(
 		durationInMinutes: { type: Number, required: true },
 		vacancies: { type: Number, required: true },
 		status: { type: Number, required: true },
+		seriesId: { type: String },
 		confirmationToken: { type: String },
 		cancelationToken: { type: String }
 	},
@@ -26,7 +27,16 @@ export const getSessionByPatient = (patientId: string) => Session.find({ patient
 export const getSessionByTherapist = (therapistId: string) => Session.find({ therapistId });
 export const getSessionById = (id: string) => Session.findById(id);
 export const createSession = (values: Record<string, any>) => new Session(values).save().then((session) => session.toObject());
+export const createManySessions = (values: Record<string, any>, dates: Date[]) => {
+	const sessions = dates.map((date) => ({
+		...values,
+		date
+	}));
+
+	return Session.insertMany(sessions).then((result) => result.map((session) => session.toObject()));
+};
 export const deleteSessionById = (id: string) => Session.findByIdAndDelete({ _id: id });
+export const deleteManySessionsBySeriesId = (id: string) => Session.deleteMany({ seriesId: id });
 export const updateSessionById = (id: string, values: Record<string, any>) => Session.findByIdAndUpdate(id, values, { new: true });
 
 export const sessionValidation = Joi.object({
@@ -36,6 +46,7 @@ export const sessionValidation = Joi.object({
 	durationInMinutes: Joi.number().required(),
 	vacancies: Joi.number().required(),
 	status: Joi.number().required(),
+	seriesId: Joi.string(),
 	confirmationToken: Joi.string(),
 	cancelationToken: Joi.string()
 });

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Controller } from '../decorators/controller';
 import { Route } from '../decorators/route';
 import { MongoGetAll } from '../decorators/mongoose/getAll';
-import { getSessionById, getSessionByQuery, Session, updateSessionById } from '../models/session';
+import { createManySessions, deleteManySessionsBySeriesId, getSessionById, getSessionByQuery, Session, updateSessionById } from '../models/session';
 import { MongoGet } from '../decorators/mongoose/get';
 import { MongoCreate } from '../decorators/mongoose/create';
 import { MongoQuery } from '../decorators/mongoose/query';
@@ -10,18 +10,22 @@ import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
 import {
 	bookSessionRequestValidation,
+	createRecurringSessionValidation,
 	IBookSessionRequest,
+	ICreateRecurringSessionRequest,
 	ISearchSessionByDate,
 	searchSessionByDateRequestValidation,
 	SessionStatusEnum
 } from '../interfaces/session';
 import { MailService } from '../services/mail';
 import { getPatientByEmail, getPatientById } from '../models/patient';
-import { auth, client, server } from '../config/config';
+import { auth, client, server, SESSION_SERIES_LENGTH } from '../config/config';
 import jwt from 'jsonwebtoken';
 import { authorizationHandler } from '../middleware/authorizationHandler';
 import { getTherapistById } from '../models/therapist';
 import { Validate } from '../decorators/validate';
+import { computerDatesByRecurrence } from '../helpers/recurrence';
+import { createSeries, deleteSeriesById, getSeriesById } from '../models/series';
 
 @Controller('/session')
 class SessionController {
@@ -246,6 +250,7 @@ class SessionController {
 						cancelationToken: session.cancelationToken,
 						patientId: session.patientId,
 						therapist: { id: therapist?._id, name: therapist?.name },
+						seriesId: session.seriesId,
 						createdAt: session.createdAt,
 						updatedAt: session.updatedAt
 					};
@@ -269,6 +274,7 @@ class SessionController {
 						cancelationToken: session.cancelationToken,
 						patient: patient ? { id: patient?._id, name: patient?.name, email: patient?.email } : undefined,
 						therapist: session.therapist,
+						seriesId: session.seriesId,
 						createdAt: session.createdAt,
 						updatedAt: session.updatedAt
 					};
@@ -357,10 +363,84 @@ class SessionController {
 		}
 	}
 
+	@Route('post', '/recurring')
+	@Validate(createRecurringSessionValidation)
+	async createRecurringSession(req: Request<any, any, ICreateRecurringSessionRequest>, res: Response, next: NextFunction) {
+		try {
+			const { date, therapistId, durationInMinutes, vacancies, recurrence, status } = req.body;
+
+			if (!date || !therapistId || !durationInMinutes || !vacancies || recurrence == null || status == null) {
+				return res.sendStatus(400);
+			}
+
+			const recurrenceDates = computerDatesByRecurrence(date, recurrence, SESSION_SERIES_LENGTH);
+
+			if (!recurrenceDates || recurrenceDates.length <= 0) {
+				return res.status(500).json({ message: 'Error creating recurrence dates' });
+			}
+
+			const createSessionSeries = await createSeries({
+				recurrence: recurrence,
+				startDate: recurrenceDates[0],
+				endDate: recurrenceDates[recurrenceDates.length - 1]
+			});
+
+			if (!createSessionSeries) {
+				return res.status(500).json({ message: 'Error creating series' });
+			}
+			//TODO: insertMany sessions with dates array and seriesId
+			const commonSessionValues = {
+				seriesId: createSessionSeries._id,
+				therapistId: therapistId,
+				durationInMinutes: durationInMinutes,
+				vacancies: vacancies,
+				status: status
+			};
+			const sessionInSeries = await createManySessions(commonSessionValues, recurrenceDates);
+
+			if (!sessionInSeries) {
+				return res.status(500).json({ message: 'Error inserting sessions' });
+			}
+
+			return res.status(200).json({ message: 'Session series created successfully' });
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
+	}
+
 	@Route('patch', '/update/:id', authorizationHandler)
 	@MongoUpdate(Session)
 	update(req: Request, res: Response, next: NextFunction) {
 		return res.status(201).json(req.mongoUpdate);
+	}
+
+	@Route('delete', '/recurring/delete/:id')
+	async deleteRecurringSessions(req: Request, res: Response, next: NextFunction) {
+		try {
+			const series = await getSeriesById(req.params.id);
+
+			if (!series) {
+				return res.sendStatus(404);
+			}
+
+			const deletedSessionsBySeries = await deleteManySessionsBySeriesId(req.params.id);
+
+			if (deletedSessionsBySeries.deletedCount === 0) {
+				return res.status(500).json({ message: 'Error deleting sessions' });
+			}
+
+			const deletedSeries = await deleteSeriesById(req.params.id);
+
+			if (!deletedSeries) {
+				return res.status(500).json({ message: 'Error deleting series' });
+			}
+
+			return res.status(200).json({ message: 'Session series deleted successfully' });
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
 	}
 
 	@Route('delete', '/delete/:id', authorizationHandler)
