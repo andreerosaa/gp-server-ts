@@ -191,6 +191,7 @@ class SessionController {
 						confirmationToken: session.confirmationToken,
 						cancelationToken: session.cancelationToken,
 						therapist: { id: therapist?._id, name: therapist?.name },
+						seriesId: session.seriesId,
 						createdAt: session.createdAt,
 						updatedAt: session.updatedAt
 					};
