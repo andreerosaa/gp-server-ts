@@ -373,6 +373,13 @@ class SessionController {
 				return res.sendStatus(400);
 			}
 
+			const now = new Date();
+			const inputDate = new Date(date);
+
+			if (inputDate < now) {
+				return res.status(403).json({ message: 'Not allowed to create sessions in the past' });
+			}
+
 			const recurrenceDates = computerDatesByRecurrence(date, recurrence, SESSION_SERIES_LENGTH);
 
 			if (!recurrenceDates || recurrenceDates.length <= 0) {

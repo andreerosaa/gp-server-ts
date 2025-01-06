@@ -7,6 +7,15 @@ export function MongoCreate(model: Model<any>) {
 
 		descriptor.value = async function (req: Request, res: Response, next: NextFunction) {
 			try {
+				const { date } = req.body;
+
+				const now = new Date();
+				const inputDate = new Date(date);
+
+				if (inputDate < now) {
+					return res.status(403).json({ message: 'Not allowed to create sessions in the past' });
+				}
+
 				const document = new model({
 					_id: new mongoose.Types.ObjectId(),
 					...req.body
