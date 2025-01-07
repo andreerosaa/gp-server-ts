@@ -16,7 +16,7 @@ export const Series = mongoose.model('Series', seriesSchema);
 
 export const getSeriess = () => Series.find();
 export const getSeriesById = (id: string) => Series.findById(id);
-export const createSeries = (values: Record<string, any>) => new Series(values).save().then((user) => user.toObject());
+export const createSeries = (values: Record<string, any>) => new Series(values).save().then((series) => series.toObject());
 export const deleteSeriesById = (id: string) => Series.findByIdAndDelete({ _id: id });
 export const updateSeriesById = (id: string, values: Record<string, any>) => Series.findByIdAndUpdate(id, values, { new: true });
 
