@@ -1,4 +1,4 @@
-import Joi, { date } from 'joi';
+import Joi from 'joi';
 import mongoose, { Schema } from 'mongoose';
 
 export const templateSchema = new Schema(
@@ -25,7 +25,7 @@ export const updateTemplateById = (id: string, values: Record<string, any>) => T
 
 export const templateValidation = Joi.object({
 	name: Joi.string().required(),
-	startTimes: Joi.array().items(date()).required(),
+	startTimes: Joi.array().items(Joi.date()).required(),
 	therapistId: Joi.string().required(),
 	durationInMinutes: Joi.number().required(),
 	vacancies: Joi.number().required()
