@@ -350,7 +350,10 @@ class SessionController {
 
 			//FIXME: remove from here
 			const emailMessage = `<h1> Ginásio Palmeiras </h1>
-				<h3> Sessão de ${updatedSession.date.toLocaleDateString()} às ${updatedSession.date.toLocaleTimeString()}</h3>
+				<h3> Sessão de ${updatedSession.date.toLocaleDateString()} às ${updatedSession.date.toLocaleTimeString([], {
+				hour: '2-digit',
+				minute: '2-digit'
+			})}</h3>
 				<p> Por favor confirme a sua presença</p>
 				<p>
 					<button><a href="${server.SERVER_BASE_URL}/session/confirm/${updatedSession.id}?token=${updatedSession.confirmationToken}">

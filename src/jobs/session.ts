@@ -57,7 +57,7 @@ export const confirmSessionsJob = CronJob.from({
 							if (patient) {
 								const emailMessage = `
 										<h1> Ginásio Palmeiras </h1>
-										<h1> Sessão de ${session.date.toLocaleDateString()} às ${session.date.toLocaleTimeString()} </h1>
+										<h1> Sessão de ${session.date.toLocaleDateString()} às ${session.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</h1>
 										<p> Por favor confirme a sua presença</p>
 										<p><a href="${server.SERVER_BASE_URL}/session/confirm/${session.id}?token=${session.confirmationToken}">Clique para confirmar</a></p>
 				                        <p><a href="${server.SERVER_BASE_URL}/session/cancel/${session.id}?token=${
