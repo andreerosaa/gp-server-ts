@@ -37,6 +37,14 @@ export const createManySessions = (values: Record<string, any>, dates: Date[]) =
 };
 export const deleteSessionById = (id: string) => Session.findByIdAndDelete({ _id: id });
 export const deleteManySessionsBySeriesId = (id: string) => Session.deleteMany({ seriesId: id });
+export const deleteManySessionsByDay = (date: Date) => {
+	const dateFilter = new Date(date);
+	// Create start and end range
+	const startOfDay = new Date(dateFilter.getFullYear(), dateFilter.getMonth(), dateFilter.getDate());
+	const endOfDay = new Date(dateFilter.getFullYear(), dateFilter.getMonth(), dateFilter.getDate() + 1);
+
+	return Session.deleteMany({ date: { $gte: startOfDay, $lt: endOfDay } });
+};
 export const updateSessionById = (id: string, values: Record<string, any>) => Session.findByIdAndUpdate(id, values, { new: true });
 
 export const sessionValidation = Joi.object({

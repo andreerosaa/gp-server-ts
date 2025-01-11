@@ -2,7 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import { Controller } from '../decorators/controller';
 import { Route } from '../decorators/route';
 import { MongoGetAll } from '../decorators/mongoose/getAll';
-import { createManySessions, deleteManySessionsBySeriesId, getSessionById, getSessionByQuery, Session, updateSessionById } from '../models/session';
+import {
+	createManySessions,
+	deleteManySessionsByDay,
+	deleteManySessionsBySeriesId,
+	getSessionById,
+	getSessionByQuery,
+	Session,
+	updateSessionById
+} from '../models/session';
 import { MongoGet } from '../decorators/mongoose/get';
 import { MongoCreate } from '../decorators/mongoose/create';
 import { MongoQuery } from '../decorators/mongoose/query';
@@ -10,8 +18,12 @@ import { MongoUpdate } from '../decorators/mongoose/update';
 import { MongoDelete } from '../decorators/mongoose/delete';
 import {
 	bookSessionRequestValidation,
+	clearDayValidation,
+	createFromTemplateValidation,
 	createRecurringSessionValidation,
 	IBookSessionRequest,
+	IClearDayRequest,
+	ICreateFromTemplateRequest,
 	ICreateRecurringSessionRequest,
 	ISearchSessionByDate,
 	searchSessionByDateRequestValidation,
@@ -26,6 +38,7 @@ import { getTherapistById } from '../models/therapist';
 import { Validate } from '../decorators/validate';
 import { computerDatesByRecurrence } from '../helpers/recurrence';
 import { createSeries, deleteSeriesById, getSeriesById } from '../models/series';
+import { getTemplateById } from '../models/template';
 
 @Controller('/session')
 class SessionController {
@@ -395,7 +408,7 @@ class SessionController {
 			if (!createSessionSeries) {
 				return res.status(500).json({ message: 'Error creating series' });
 			}
-			//TODO: insertMany sessions with dates array and seriesId
+
 			const commonSessionValues = {
 				seriesId: createSessionSeries._id,
 				therapistId: therapistId,
@@ -416,10 +429,80 @@ class SessionController {
 		}
 	}
 
+	@Route('post', '/template')
+	@Validate(createFromTemplateValidation)
+	async createFromTemplate(req: Request<any, any, ICreateFromTemplateRequest>, res: Response, next: NextFunction) {
+		try {
+			const { date, templateId } = req.body;
+
+			if (!date || !templateId) {
+				return res.sendStatus(400);
+			}
+
+			const template = await getTemplateById(templateId);
+
+			if (!template) {
+				return res.status(404).json({ message: 'Template not found' });
+			}
+
+			const commonSessionValues = {
+				therapistId: template.therapistId,
+				durationInMinutes: template.durationInMinutes,
+				vacancies: template.vacancies,
+				status: SessionStatusEnum.AVAILABLE
+			};
+
+			const now = new Date();
+
+			const dates = template.startTimes
+				.map((time) => {
+					const newDate = new Date(date);
+					const newTime = new Date(time.toLocaleString());
+
+					return new Date(newDate.setHours(newTime.getHours(), newTime.getMinutes()));
+				})
+				.filter((date) => date > now);
+
+			const sessions = await createManySessions(commonSessionValues, dates);
+
+			if (!sessions) {
+				return res.status(500).json({ message: 'Error inserting sessions' });
+			}
+
+			return res.status(200).json({ message: 'Session series created successfully' });
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
+	}
+
 	@Route('patch', '/update/:id', authorizationHandler)
 	@MongoUpdate(Session)
 	update(req: Request, res: Response, next: NextFunction) {
 		return res.status(201).json(req.mongoUpdate);
+	}
+
+	@Route('post', '/day/delete')
+	@Validate(clearDayValidation)
+	async clearDaySessions(req: Request<any, any, IClearDayRequest>, res: Response, next: NextFunction) {
+		try {
+			const { date } = req.body;
+
+			if (!date) {
+				return res.sendStatus(400);
+			}
+
+			const deletedSessionsByDay = await deleteManySessionsByDay(date);
+
+			if (deletedSessionsByDay.deletedCount === 0) {
+				return res.status(500).json({ message: 'Error deleting sessions' });
+			}
+
+			return res.status(200).json({ message: 'Session series deleted successfully' });
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
 	}
 
 	@Route('delete', '/recurring/delete/:id')

@@ -61,13 +61,32 @@ export interface ICreateRecurringSessionRequest {
 	status: SessionStatusEnum;
 }
 
+export interface ICreateFromTemplateRequest {
+	date: Date;
+	templateId: string;
+}
+
+export interface IClearDayRequest {
+	date: Date;
+	templateId: string;
+}
+
 export const createRecurringSessionValidation = Joi.object({
-	date: Joi.string().required(),
+	date: Joi.date().required(),
 	therapistId: Joi.string().required(),
 	durationInMinutes: Joi.number().required(),
 	vacancies: Joi.number().required(),
 	recurrence: Joi.number().required(),
 	status: Joi.number().required()
+});
+
+export const createFromTemplateValidation = Joi.object({
+	date: Joi.date().required(),
+	templateId: Joi.string().required()
+});
+
+export const clearDayValidation = Joi.object({
+	date: Joi.date().required()
 });
 
 export enum SessionRecurrenceEnum {
