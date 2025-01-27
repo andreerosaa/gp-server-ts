@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import mongoose, { Schema } from 'mongoose';
+import { ISession } from '../interfaces/session';
 
 export const sessionSchema = new Schema(
 	{
@@ -18,13 +19,13 @@ export const sessionSchema = new Schema(
 	}
 );
 
-export const Session = mongoose.model('Session', sessionSchema);
+export const Session = mongoose.model<ISession>('Session', sessionSchema);
 
-export const getSessions = () => Session.find();
+export const getSessions = () => Session.find().sort({ date: 1 });
 export const getSessionByQuery = (query: Object) => Session.find({ ...query }).sort({ date: 1 });
-export const getSessionByDate = (date: Date) => Session.find({ date });
-export const getSessionByPatient = (patientId: string) => Session.find({ patientId });
-export const getSessionByTherapist = (therapistId: string) => Session.find({ therapistId });
+export const getSessionByDate = (date: Date) => Session.find({ date }).sort({ date: 1 });
+export const getSessionByPatient = (patientId: string) => Session.find({ patientId }).sort({ date: 1 });
+export const getSessionByTherapist = (therapistId: string) => Session.find({ therapistId }).sort({ date: 1 });
 export const getSessionById = (id: string) => Session.findById(id);
 export const createSession = (values: Record<string, any>) => new Session(values).save().then((session) => session.toObject());
 export const createManySessions = (values: Record<string, any>, dates: Date[]) => {

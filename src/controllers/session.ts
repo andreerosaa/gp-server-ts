@@ -21,11 +21,15 @@ import {
 	clearDayValidation,
 	createFromTemplateValidation,
 	createRecurringSessionValidation,
+	DayStatusByMonth,
+	getMonthlySessionsRequestValidation,
 	IBookSessionRequest,
 	IClearDayRequest,
 	ICreateFromTemplateRequest,
 	ICreateRecurringSessionRequest,
+	IDayStatusByMonth,
 	ISearchSessionByDate,
+	ISession,
 	searchSessionByDateRequestValidation,
 	SessionStatusEnum
 } from '../interfaces/session';
@@ -301,6 +305,66 @@ class SessionController {
 		}
 	}
 
+	@Route('post', '/month')
+	@Validate(getMonthlySessionsRequestValidation)
+	async getMonthlySessions(req: Request<any, any, IDayStatusByMonth>, res: Response, next: NextFunction) {
+		try {
+			const { month, year } = req.body;
+
+			if (month == null || year == null) {
+				return res.sendStatus(400);
+			}
+
+			const startOfMonth = new Date(year, month, 1);
+
+			const endOfMonth = new Date(year, month + 1, 0);
+			endOfMonth.setUTCHours(23, 59, 59, 999);
+
+			const request = {
+				date: {
+					$gte: startOfMonth,
+					$lte: endOfMonth
+				}
+			};
+			const allSessionsInMonth = await getSessionByQuery(request);
+
+			if (!allSessionsInMonth) {
+				return res.sendStatus(404);
+			}
+
+			if (allSessionsInMonth.length === 0) {
+				return res.status(200).json(allSessionsInMonth);
+			}
+
+			const dayStatusByMonth: DayStatusByMonth = { available: [], pending: [], full: [] };
+
+			// Group sessions by date
+			const groupedByDate = allSessionsInMonth.reduce((acc: { [key: number]: ISession[] }, session) => {
+				if (!acc[session.date.getDate()]) {
+					acc[session.date.getDate()] = [];
+				}
+				acc[session.date.getDate()].push(session);
+				return acc;
+			}, {});
+
+			// Classify each day
+			for (const [, sessions] of Object.entries(groupedByDate)) {
+				if (sessions.some((s) => s.status === SessionStatusEnum.AVAILABLE)) {
+					dayStatusByMonth.available.push(sessions[0].date);
+				} else if (sessions.some((s) => s.status === SessionStatusEnum.PENDING)) {
+					dayStatusByMonth.pending.push(new Date(sessions[0].date));
+				} else {
+					dayStatusByMonth.full.push(new Date(sessions[0].date));
+				}
+			}
+
+			return res.status(200).json(dayStatusByMonth);
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
+	}
+
 	@Route('post', '/book/:id')
 	@Validate(bookSessionRequestValidation)
 	async book(req: Request<any, any, IBookSessionRequest>, res: Response, next: NextFunction) {
@@ -465,6 +529,10 @@ class SessionController {
 					return new Date(newDate.setHours(newTime.getHours(), newTime.getMinutes()));
 				})
 				.filter((date) => date > now);
+
+			if (!dates || dates.length === 0) {
+				return res.status(403).json({ message: 'Cannot create sessions before the current time' });
+			}
 
 			const sessions = await createManySessions(commonSessionValues, dates);
 

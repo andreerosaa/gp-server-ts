@@ -1,11 +1,10 @@
-import { ObjectId } from 'mongoose';
 import { BaseModel } from './baseModel';
 import Joi from 'joi';
 
 export interface ISession extends BaseModel {
 	date: Date;
-	therapistId: ObjectId;
-	patientId: ObjectId;
+	therapistId: string;
+	patientId: string;
 	durationInMinutes: number;
 	vacancies: number;
 	status: SessionStatusEnum;
@@ -16,8 +15,8 @@ export interface ISession extends BaseModel {
 
 export interface ISessionByDate extends BaseModel {
 	date: Date;
-	therapist: { id: ObjectId; name: string };
-	patientId: ObjectId;
+	therapist: { id: string; name: string };
+	patientId: string;
 	durationInMinutes: number;
 	vacancies: number;
 	status: SessionStatusEnum;
@@ -43,6 +42,22 @@ export interface ISearchSessionByDate {
 export const searchSessionByDateRequestValidation = Joi.object({
 	date: Joi.date().required()
 });
+
+export interface IDayStatusByMonth {
+	month: number;
+	year: number;
+}
+
+export const getMonthlySessionsRequestValidation = Joi.object({
+	month: Joi.number().required(),
+	year: Joi.number().required()
+});
+
+export interface DayStatusByMonth {
+	available: Date[]; //at least one available
+	pending: Date[]; //at least one pending
+	full: Date[]; //none available
+}
 
 export enum SessionStatusEnum {
 	AVAILABLE,
