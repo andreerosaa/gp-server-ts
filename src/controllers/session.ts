@@ -35,7 +35,7 @@ import {
 } from '../interfaces/session';
 import { MailService } from '../services/mail';
 import { getPatientByEmail, getPatientById } from '../models/patient';
-import { auth, client, server, SESSION_SERIES_LENGTH } from '../config/config';
+import { auth, client, MAX_SESSIONS_PATIENT_PER_DAY, server, SESSION_SERIES_LENGTH } from '../config/config';
 import jwt from 'jsonwebtoken';
 import { authorizationHandler } from '../middleware/authorizationHandler';
 import { getTherapistById } from '../models/therapist';
@@ -392,6 +392,26 @@ class SessionController {
 
 			if (!findPatientByEmail.verified) {
 				return res.status(403).json({ message: 'Unverified patient' });
+			}
+
+			const startOfDay = new Date(session.date);
+			startOfDay.setUTCHours(0, 0, 0, 0);
+
+			const endOfDay = new Date(session.date);
+			endOfDay.setUTCHours(23, 59, 59, 999);
+
+			const request = {
+				patientId: findPatientByEmail._id,
+				date: {
+					$gte: startOfDay,
+					$lte: endOfDay
+				}
+			};
+
+			const sessionsBookedByPatient = await getSessionByQuery(request);
+
+			if (sessionsBookedByPatient.length === MAX_SESSIONS_PATIENT_PER_DAY) {
+				return res.status(401).json({ message: 'Maximum number of sessions per patient per day reached' });
 			}
 
 			const jwtExpiration = Math.floor((new Date(session.date).getTime() - 24 * 60 * 60 * 1000 - Date.now()) / 1000);
