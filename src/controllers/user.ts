@@ -93,7 +93,7 @@ class UserController {
 			if (findUser?.verified) {
 				return res.status(403).json({
 					message: 'User is already verified',
-					patient: findUser
+					user: findUser
 				});
 			}
 
@@ -101,7 +101,7 @@ class UserController {
 				const verifyUserRequest = { verified: true };
 				await updateUserById(req.params.id, verifyUserRequest);
 
-				logging.log('Patient verified successfully');
+				logging.log('User verified successfully');
 				return res.sendStatus(200).end();
 			} else {
 				return res.status(400).json({ error: 'Invalid or expired code' }).end();
