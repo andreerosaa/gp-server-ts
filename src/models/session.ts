@@ -6,10 +6,15 @@ export const sessionSchema = new Schema(
 	{
 		date: { type: Date, required: true },
 		therapistId: { type: String, required: true },
-		patientId: { type: String },
+		userId: { type: String },
 		durationInMinutes: { type: Number, required: true },
 		vacancies: { type: Number, required: true },
-		status: { type: Number, required: true },
+		status: {
+			type: String,
+			enum: ['available', 'pending', 'confirmed', 'completed', 'canceled'],
+			default: 'available',
+			required: true
+		},
 		seriesId: { type: String },
 		confirmationToken: { type: String },
 		cancelationToken: { type: String }
@@ -24,7 +29,7 @@ export const Session = mongoose.model<ISession>('Session', sessionSchema);
 export const getSessions = () => Session.find().sort({ date: 1 });
 export const getSessionByQuery = (query: Object) => Session.find({ ...query }).sort({ date: 1 });
 export const getSessionByDate = (date: Date) => Session.find({ date }).sort({ date: 1 });
-export const getSessionByPatient = (patientId: string) => Session.find({ patientId }).sort({ date: 1 });
+export const getSessionByUser = (userId: string) => Session.find({ userId: userId }).sort({ date: 1 });
 export const getSessionByTherapist = (therapistId: string) => Session.find({ therapistId }).sort({ date: 1 });
 export const getSessionById = (id: string) => Session.findById(id);
 export const createSession = (values: Record<string, any>) => new Session(values).save().then((session) => session.toObject());
@@ -51,7 +56,7 @@ export const updateSessionById = (id: string, values: Record<string, any>) => Se
 export const sessionValidation = Joi.object({
 	date: Joi.date().required(),
 	therapistId: Joi.string().id().required(),
-	patientId: Joi.string().id(),
+	userId: Joi.string().id(),
 	durationInMinutes: Joi.number().required(),
 	vacancies: Joi.number().required(),
 	status: Joi.number().required(),

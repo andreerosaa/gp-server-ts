@@ -34,8 +34,7 @@ import {
 	SessionStatusEnum
 } from '../interfaces/session';
 import { MailService } from '../services/mail';
-import { getPatientByEmail, getPatientById } from '../models/patient';
-import { auth, client, MAX_SESSIONS_PATIENT_PER_DAY, server, SESSION_SERIES_LENGTH } from '../config/config';
+import { auth, client, MAX_SESSIONS_USER_PER_DAY, server, SESSION_SERIES_LENGTH } from '../config/config';
 import jwt from 'jsonwebtoken';
 import { authorizationHandler } from '../middleware/authorizationHandler';
 import { getTherapistById } from '../models/therapist';
@@ -43,6 +42,7 @@ import { Validate } from '../decorators/validate';
 import { computerDatesByRecurrence } from '../helpers/recurrence';
 import { createSeries, deleteSeriesById, getSeriesById } from '../models/series';
 import { getTemplateById } from '../models/template';
+import { getUserByEmail, getUserById } from '../models/user';
 
 @Controller('/session')
 class SessionController {
@@ -73,13 +73,13 @@ class SessionController {
 				return res.sendStatus(404);
 			}
 
-			if (!session.patientId || session.patientId.length === 0) {
-				return res.status(403).json({ message: 'Patient not found' });
+			if (!session.userId || session.userId.length === 0) {
+				return res.status(403).json({ message: 'User not found' });
 			} else {
-				const patient = await getPatientById(session.patientId);
+				const user = await getUserById(session.userId);
 
-				if (!patient?.verified) {
-					return res.status(403).json({ message: 'Patient not verified' });
+				if (!user?.verified) {
+					return res.status(403).json({ message: 'Unverified user' });
 				}
 			}
 
@@ -117,13 +117,13 @@ class SessionController {
 				return res.sendStatus(404);
 			}
 
-			if (!session.patientId || session.patientId.length === 0) {
-				return res.status(403).json({ message: 'Patient not found' });
+			if (!session.userId || session.userId.length === 0) {
+				return res.status(403).json({ message: 'User not found' });
 			} else {
-				const patient = await getPatientById(session.patientId);
+				const user = await getUserById(session.userId);
 
-				if (!patient?.verified) {
-					return res.status(403).json({ message: 'Patient not verified' });
+				if (!user?.verified) {
+					return res.status(403).json({ message: 'Unverified user' });
 				}
 			}
 
@@ -136,7 +136,7 @@ class SessionController {
 			}
 
 			const updateSessionRequest = {
-				patientId: '',
+				userId: '',
 				confirmationToken: '',
 				cancelationToken: '',
 				status: SessionStatusEnum.AVAILABLE
@@ -221,7 +221,7 @@ class SessionController {
 		}
 	}
 
-	@Route('post', '/date-detailed')
+	@Route('post', '/date-detailed', authorizationHandler)
 	@Validate(searchSessionByDateRequestValidation)
 	async getByDateDetailed(req: Request<any, any, ISearchSessionByDate>, res: Response, next: NextFunction) {
 		try {
@@ -265,7 +265,7 @@ class SessionController {
 						status: session.status,
 						confirmationToken: session.confirmationToken,
 						cancelationToken: session.cancelationToken,
-						patientId: session.patientId,
+						userId: session.userId,
 						therapist: { id: therapist?._id, name: therapist?.name },
 						seriesId: session.seriesId,
 						createdAt: session.createdAt,
@@ -276,10 +276,10 @@ class SessionController {
 
 			const sessionsDetailed = await Promise.all(
 				sessionsWithTherapist.map(async (session) => {
-					let patient = null;
+					let user = null;
 
-					if (session.patientId) {
-						patient = await getPatientById(session.patientId);
+					if (session.userId) {
+						user = await getUserById(session.userId);
 					}
 					return {
 						_id: session._id,
@@ -289,7 +289,7 @@ class SessionController {
 						status: session.status,
 						confirmationToken: session.confirmationToken,
 						cancelationToken: session.cancelationToken,
-						patient: patient ? { id: patient?._id, name: patient?.name, email: patient?.email } : undefined,
+						user: user ? { id: user?._id, name: user?.name, email: user?.email } : undefined,
 						therapist: session.therapist,
 						seriesId: session.seriesId,
 						createdAt: session.createdAt,
@@ -365,33 +365,33 @@ class SessionController {
 		}
 	}
 
-	@Route('post', '/book/:id')
+	@Route('post', '/book/:id', authorizationHandler)
 	@Validate(bookSessionRequestValidation)
 	async book(req: Request<any, any, IBookSessionRequest>, res: Response, next: NextFunction) {
 		try {
-			const { patientName, email } = req.body;
+			const { email } = req.body;
 
-			if (!patientName || !email) {
+			if (!email) {
 				return res.sendStatus(400);
 			}
 
 			const session = await getSessionById(req.params.id);
 			if (!session) {
 				return res.sendStatus(404);
-			} else if (session.patientId) {
+			} else if (session.userId) {
 				return res.status(403).json({ message: 'Session already booked' });
 			} else if (session.status !== SessionStatusEnum.AVAILABLE) {
 				return res.status(403).json({ message: 'Session is not available' });
 			}
 
-			const findPatientByEmail = await getPatientByEmail(email);
+			const findUserByEmail = await getUserByEmail(email);
 
-			if (!findPatientByEmail) {
-				return res.status(404).json({ message: 'Patient not found' });
+			if (!findUserByEmail) {
+				return res.status(404).json({ message: 'User not found' });
 			}
 
-			if (!findPatientByEmail.verified) {
-				return res.status(403).json({ message: 'Unverified patient' });
+			if (!findUserByEmail.verified) {
+				return res.status(403).json({ message: 'Unverified user' });
 			}
 
 			const startOfDay = new Date(session.date);
@@ -401,26 +401,26 @@ class SessionController {
 			endOfDay.setUTCHours(23, 59, 59, 999);
 
 			const request = {
-				patientId: findPatientByEmail._id,
+				userId: findUserByEmail._id,
 				date: {
 					$gte: startOfDay,
 					$lte: endOfDay
 				}
 			};
 
-			const sessionsBookedByPatient = await getSessionByQuery(request);
+			const sessionsBookedByUser = await getSessionByQuery(request);
 
-			if (sessionsBookedByPatient.length === MAX_SESSIONS_PATIENT_PER_DAY) {
-				return res.status(401).json({ message: 'Maximum number of sessions per patient per day reached' });
+			if (sessionsBookedByUser.length === MAX_SESSIONS_USER_PER_DAY) {
+				return res.status(401).json({ message: 'Maximum number of sessions per user per day reached' });
 			}
 
 			const jwtExpiration = Math.floor((new Date(session.date).getTime() - 24 * 60 * 60 * 1000 - Date.now()) / 1000);
 
-			const confirmationToken = jwt.sign({ patientName: patientName }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
-			const cancelationToken = jwt.sign({ patientName: patientName }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
+			const confirmationToken = jwt.sign({ email: email }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
+			const cancelationToken = jwt.sign({ email: email }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
 
 			const updateSessionRequest = {
-				patientId: findPatientByEmail._id.toString(),
+				userId: findUserByEmail._id.toString(),
 				status: SessionStatusEnum.PENDING,
 				confirmationToken: confirmationToken,
 				cancelationToken: cancelationToken
@@ -445,7 +445,7 @@ class SessionController {
 					</a><button>
 					<a href="${server.SERVER_BASE_URL}/session/cancel/${updatedSession.id}?token=${updatedSession.cancelationToken}">Clique para cancelar</a>
 				</p>`;
-			const receiver = findPatientByEmail.email;
+			const receiver = findUserByEmail.email;
 			const subject = 'Email de confirmação';
 			const emailService = new MailService();
 
@@ -463,7 +463,7 @@ class SessionController {
 		}
 	}
 
-	@Route('post', '/recurring')
+	@Route('post', '/recurring', authorizationHandler)
 	@Validate(createRecurringSessionValidation)
 	async createRecurringSession(req: Request<any, any, ICreateRecurringSessionRequest>, res: Response, next: NextFunction) {
 		try {
@@ -516,7 +516,7 @@ class SessionController {
 		}
 	}
 
-	@Route('post', '/template')
+	@Route('post', '/template', authorizationHandler)
 	@Validate(createFromTemplateValidation)
 	async createFromTemplate(req: Request<any, any, ICreateFromTemplateRequest>, res: Response, next: NextFunction) {
 		try {
@@ -573,7 +573,7 @@ class SessionController {
 		return res.status(201).json(req.mongoUpdate);
 	}
 
-	@Route('post', '/day/delete')
+	@Route('post', '/day/delete', authorizationHandler)
 	@Validate(clearDayValidation)
 	async clearDaySessions(req: Request<any, any, IClearDayRequest>, res: Response, next: NextFunction) {
 		try {
@@ -596,7 +596,7 @@ class SessionController {
 		}
 	}
 
-	@Route('delete', '/recurring/delete/:id')
+	@Route('delete', '/recurring/delete/:id', authorizationHandler)
 	async deleteRecurringSessions(req: Request, res: Response, next: NextFunction) {
 		try {
 			const series = await getSeriesById(req.params.id);

@@ -2,8 +2,8 @@ import { CronJob } from 'cron';
 import { cron, server } from '../config/config';
 import { deleteSessionById, getSessionByQuery } from '../models/session';
 import { SessionStatusEnum } from '../interfaces/session';
-import { getPatientById } from '../models/patient';
 import { MailService } from '../services/mail';
+import { getUserById } from '../models/user';
 
 /** DELETING OLD SESSIONS */
 export const oldSessionsJob = CronJob.from({
@@ -52,9 +52,9 @@ export const confirmSessionsJob = CronJob.from({
 			if (response.length > 0) {
 				response.forEach(async (session) => {
 					try {
-						if (session.status === SessionStatusEnum.PENDING && session.patientId && session.patientId.length > 0) {
-							const patient = await getPatientById(session.patientId);
-							if (patient) {
+						if (session.status === SessionStatusEnum.PENDING && session.userId && session.userId.length > 0) {
+							const user = await getUserById(session.userId);
+							if (user) {
 								const emailMessage = `
 										<h1> Ginásio Palmeiras </h1>
 										<h1> Sessão de ${session.date.toLocaleDateString()} às ${session.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</h1>
@@ -64,7 +64,7 @@ export const confirmSessionsJob = CronJob.from({
 									session.cancelationToken
 								}">Clique para cancelar</a></p>
 									`;
-								const receiver = patient.email;
+								const receiver = user.email;
 								const subject = 'Email de confirmação';
 								const emailService = new MailService();
 

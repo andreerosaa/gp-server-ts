@@ -4,7 +4,7 @@ import Joi from 'joi';
 export interface ISession extends BaseModel {
 	date: Date;
 	therapistId: string;
-	patientId: string;
+	userId: string;
 	durationInMinutes: number;
 	vacancies: number;
 	status: SessionStatusEnum;
@@ -16,7 +16,7 @@ export interface ISession extends BaseModel {
 export interface ISessionByDate extends BaseModel {
 	date: Date;
 	therapist: { id: string; name: string };
-	patientId: string;
+	userId: string;
 	durationInMinutes: number;
 	vacancies: number;
 	status: SessionStatusEnum;
@@ -27,12 +27,10 @@ export interface ISessionByDate extends BaseModel {
 
 export interface IBookSessionRequest {
 	email: string;
-	patientName: string;
 }
 
 export const bookSessionRequestValidation = Joi.object({
-	email: Joi.string().email().required(),
-	patientName: Joi.string().required()
+	email: Joi.string().email().required()
 });
 
 export interface ISearchSessionByDate {
@@ -60,11 +58,11 @@ export interface DayStatusByMonth {
 }
 
 export enum SessionStatusEnum {
-	AVAILABLE,
-	PENDING,
-	CONFIRMED,
-	COMPLETED,
-	CANCELED
+	AVAILABLE = 'available',
+	PENDING = 'pending',
+	CONFIRMED = 'confirmed',
+	COMPLETED = 'completed',
+	CANCELED = 'canceled'
 }
 
 export interface ICreateRecurringSessionRequest {

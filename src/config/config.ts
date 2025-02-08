@@ -31,7 +31,7 @@ export const CLIENT_PORT = process.env.CLIENT_PORT ? Number(process.env.CLIENT_P
 
 export const SESSION_SERIES_LENGTH = process.env.SESSION_SERIES_LENGTH ? Number(process.env.SESSION_SERIES_LENGTH) : 365;
 
-export const MAX_SESSIONS_PATIENT_PER_DAY = process.env.MAX_SESSIONS_PATIENT_PER_DAY ? Number(process.env.MAX_SESSIONS_PATIENT_PER_DAY) : 2;
+export const MAX_SESSIONS_USER_PER_DAY = process.env.MAX_SESSIONS_USER_PER_DAY ? Number(process.env.MAX_SESSIONS_USER_PER_DAY) : 2;
 
 export const auth = {
 	JWT_SECRET,

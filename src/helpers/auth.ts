@@ -7,5 +7,5 @@ import bcrypt from 'bcryptjs';
 // 	return crypto.createHmac('sha256', [salt, password].join('/')).update(auth.JWT_SECRET);
 // };
 
-export const hashPassword = (password: string) => bcrypt.hash(password, 10);
+export const hashPassword = (password: string) => bcrypt.hash(password, 12);
 export const comparePasswords = (inputPassword: string, userPassword: string) => bcrypt.compare(inputPassword, userPassword);
