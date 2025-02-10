@@ -179,13 +179,13 @@ class UserController {
 			}
 
 			if (!existingUser.verified) {
-				return res.status(403).json({ message: 'Unverified user' });
+				return res.status(403).json({ message: 'Unverified user', userId: existingUser._id });
 			}
 
 			// Compare passwords
 			const passwordMatch = await comparePasswords(req.body.password, existingUser.password);
 			if (!passwordMatch) {
-				return res.status(401).json({ error: 'Invalid credentials' });
+				return res.status(400).json({ error: 'Incorrect username or password' });
 			}
 
 			// Generate JWT token
@@ -232,7 +232,7 @@ class UserController {
 			const { refreshToken } = req.cookies;
 
 			if (!refreshToken) {
-				return res.status(401).json({ message: 'Refresh token not found' });
+				return res.status(400).json({ message: 'Refresh token not found' });
 			}
 
 			const verifyRefreshToken = <{ email: string; role: RoleEnum }>jwt.verify(refreshToken, auth.JWT_REFRESH_TOKEN_SECRET as jwt.Secret);

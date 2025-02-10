@@ -419,7 +419,7 @@ class SessionController {
 			const sessionsBookedByUser = await getSessionByQuery(request);
 
 			if (sessionsBookedByUser.length === MAX_SESSIONS_USER_PER_DAY) {
-				return res.status(401).json({ message: 'Maximum number of sessions per user per day reached' });
+				return res.status(406).json({ message: 'Maximum number of sessions per user per day reached' });
 			}
 
 			const jwtExpiration = Math.floor((new Date(session.date).getTime() - 24 * 60 * 60 * 1000 - Date.now()) / 1000);
