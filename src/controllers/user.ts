@@ -22,16 +22,18 @@ import { authorizationHandler } from '../middleware/authorizationHandler';
 import { Validate } from '../decorators/validate';
 import { MailService } from '../services/mail';
 import { loginLimitHandler } from '../middleware/loginLimitHandler';
+import { RoleEnum } from '../interfaces/user';
+import { roleHandler } from '../middleware/roleHandler';
 
 @Controller('/user')
 class UserController {
-	@Route('get', '', authorizationHandler)
+	@Route('get', '', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@MongoGetAll(User)
 	getAll(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGetAll);
 	}
 
-	@Route('get', '/:id', authorizationHandler)
+	@Route('get', '/:id', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@MongoGet(User)
 	getById(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGet);
@@ -233,13 +235,15 @@ class UserController {
 				return res.status(401).json({ message: 'Refresh token not found' });
 			}
 
-			const verifyRefreshToken = <{ username: string }>jwt.verify(refreshToken, auth.JWT_REFRESH_TOKEN_SECRET as jwt.Secret);
+			const verifyRefreshToken = <{ email: string; role: RoleEnum }>jwt.verify(refreshToken, auth.JWT_REFRESH_TOKEN_SECRET as jwt.Secret);
 
 			if (!verifyRefreshToken) {
 				return res.status(403).json({ message: 'Invalid refresh token' });
 			}
 
-			const accessToken = jwt.sign({ username: verifyRefreshToken.username }, auth.JWT_SECRET as jwt.Secret, { expiresIn: '5m' });
+			const accessToken = jwt.sign({ email: verifyRefreshToken.email, role: verifyRefreshToken.role }, auth.JWT_SECRET as jwt.Secret, {
+				expiresIn: '5m'
+			});
 
 			return res.status(200).json({ accessToken: accessToken }).end();
 		} catch (error) {
@@ -248,13 +252,13 @@ class UserController {
 		}
 	}
 
-	@Route('post', '/query', authorizationHandler)
+	@Route('post', '/query', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@MongoQuery(User)
 	query(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoQuery);
 	}
 
-	@Route('patch', '/update/:id', authorizationHandler)
+	@Route('patch', '/update/:id', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	async update(req: Request, res: Response, next: NextFunction) {
 		try {
 			const user = await User.findById(req.params.id);
@@ -277,7 +281,7 @@ class UserController {
 		}
 	}
 
-	@Route('delete', '/delete/:id', authorizationHandler)
+	@Route('delete', '/delete/:id', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@MongoDelete(User)
 	delete(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json({ message: 'deleted' });

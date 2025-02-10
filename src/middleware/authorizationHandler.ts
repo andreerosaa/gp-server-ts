@@ -1,13 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { auth } from '../config/config';
+import { RoleEnum } from '../interfaces/user';
 
 declare global {
 	namespace Express {
 		interface Request {
-			username?: string;
+			email?: string;
+			role?: RoleEnum;
 		}
 	}
+}
+
+interface JwtPayload {
+	email: string;
+	role: RoleEnum;
 }
 
 export function authorizationHandler(req: Request, res: Response, next: NextFunction) {
@@ -18,8 +25,11 @@ export function authorizationHandler(req: Request, res: Response, next: NextFunc
 		res.status(401).json({ error: 'Access denied: missing token' });
 	} else {
 		try {
-			const decoded = jwt.verify(token, auth.JWT_SECRET as jwt.Secret);
-			req.username = decoded as string;
+			const decoded = jwt.verify(token, auth.JWT_SECRET as jwt.Secret) as JwtPayload;
+
+			req.email = decoded.email;
+			req.role = decoded.role;
+
 			next();
 		} catch (err) {
 			logging.error({ error: err, message: 'Invalid token' });

@@ -43,16 +43,18 @@ import { computerDatesByRecurrence } from '../helpers/recurrence';
 import { createSeries, deleteSeriesById, getSeriesById } from '../models/series';
 import { getTemplateById } from '../models/template';
 import { getUserByEmail, getUserById } from '../models/user';
+import { RoleEnum } from '../interfaces/user';
+import { roleHandler } from '../middleware/roleHandler';
 
 @Controller('/session')
 class SessionController {
-	@Route('get', '', authorizationHandler)
+	@Route('get', '', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@MongoGetAll(Session)
 	getAll(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGetAll);
 	}
 
-	@Route('get', '/:id', authorizationHandler)
+	@Route('get', '/:id', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@MongoGet(Session)
 	getById(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoGet);
@@ -151,13 +153,13 @@ class SessionController {
 		}
 	}
 
-	@Route('post', '', authorizationHandler)
+	@Route('post', '', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@MongoCreate(Session)
 	create(req: Request, res: Response, next: NextFunction) {
 		return res.status(201).json(req.mongoCreate);
 	}
 
-	@Route('post', '/query', authorizationHandler)
+	@Route('post', '/query', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@MongoQuery(Session)
 	query(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json(req.mongoQuery);
@@ -221,7 +223,7 @@ class SessionController {
 		}
 	}
 
-	@Route('post', '/date-detailed', authorizationHandler)
+	@Route('post', '/date-detailed', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@Validate(searchSessionByDateRequestValidation)
 	async getByDateDetailed(req: Request<any, any, ISearchSessionByDate>, res: Response, next: NextFunction) {
 		try {
@@ -370,9 +372,15 @@ class SessionController {
 	async book(req: Request<any, any, IBookSessionRequest>, res: Response, next: NextFunction) {
 		try {
 			const { email } = req.body;
+			const userEmail = req.email;
+			const userRole = req.role;
 
-			if (!email) {
+			if (!email || !userEmail || !userRole) {
 				return res.sendStatus(400);
+			}
+
+			if (userRole === RoleEnum.PATIENT && userEmail !== email) {
+				return res.status(403).json({ message: 'Email does not match the user email' });
 			}
 
 			const session = await getSessionById(req.params.id);
@@ -463,7 +471,7 @@ class SessionController {
 		}
 	}
 
-	@Route('post', '/recurring', authorizationHandler)
+	@Route('post', '/recurring', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@Validate(createRecurringSessionValidation)
 	async createRecurringSession(req: Request<any, any, ICreateRecurringSessionRequest>, res: Response, next: NextFunction) {
 		try {
@@ -516,7 +524,7 @@ class SessionController {
 		}
 	}
 
-	@Route('post', '/template', authorizationHandler)
+	@Route('post', '/template', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@Validate(createFromTemplateValidation)
 	async createFromTemplate(req: Request<any, any, ICreateFromTemplateRequest>, res: Response, next: NextFunction) {
 		try {
@@ -567,13 +575,13 @@ class SessionController {
 		}
 	}
 
-	@Route('patch', '/update/:id', authorizationHandler)
+	@Route('patch', '/update/:id', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@MongoUpdate(Session)
 	update(req: Request, res: Response, next: NextFunction) {
 		return res.status(201).json(req.mongoUpdate);
 	}
 
-	@Route('post', '/day/delete', authorizationHandler)
+	@Route('post', '/day/delete', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@Validate(clearDayValidation)
 	async clearDaySessions(req: Request<any, any, IClearDayRequest>, res: Response, next: NextFunction) {
 		try {
@@ -596,7 +604,7 @@ class SessionController {
 		}
 	}
 
-	@Route('delete', '/recurring/delete/:id', authorizationHandler)
+	@Route('delete', '/recurring/delete/:id', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	async deleteRecurringSessions(req: Request, res: Response, next: NextFunction) {
 		try {
 			const series = await getSeriesById(req.params.id);
@@ -624,7 +632,7 @@ class SessionController {
 		}
 	}
 
-	@Route('delete', '/delete/:id', authorizationHandler)
+	@Route('delete', '/delete/:id', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@MongoDelete(Session)
 	delete(req: Request, res: Response, next: NextFunction) {
 		return res.status(200).json({ message: 'deleted' });
