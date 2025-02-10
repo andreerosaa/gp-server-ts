@@ -291,7 +291,7 @@ class SessionController {
 						status: session.status,
 						confirmationToken: session.confirmationToken,
 						cancelationToken: session.cancelationToken,
-						user: user ? { id: user?._id, name: user?.name, email: user?.email } : undefined,
+						user: user ? { id: user?._id, name: user?.name, surname: user?.surname, email: user?.email } : undefined,
 						therapist: session.therapist,
 						seriesId: session.seriesId,
 						createdAt: session.createdAt,
