@@ -33,7 +33,7 @@ export function authorizationHandler(req: Request, res: Response, next: NextFunc
 			next();
 		} catch (err) {
 			logging.error({ error: err, message: 'Invalid token' });
-			res.status(403).json({ error: 'Invalid token' });
+			res.status(401).json({ error: 'Invalid token' });
 		}
 	}
 }
