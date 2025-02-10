@@ -104,7 +104,7 @@ class UserController {
 				await updateUserById(req.params.id, verifyUserRequest);
 
 				logging.log('User verified successfully');
-				return res.sendStatus(200).end();
+				return res.status(200).end();
 			} else {
 				return res.status(400).json({ error: 'Invalid or expired code' }).end();
 			}
