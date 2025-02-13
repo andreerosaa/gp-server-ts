@@ -12,7 +12,6 @@ import MainController from './controllers/main';
 import { declareHandler } from './middleware/declareHandler';
 import SessionController from './controllers/session';
 import TherapistController from './controllers/therapist';
-import PatientController from './controllers/patient';
 import UserController from './controllers/user';
 import { rateLimitHandler } from './middleware/rateLimitHandler';
 import { confirmSessionsJob, oldSessionsJob } from './jobs/session';
@@ -57,10 +56,7 @@ export const Main = async () => {
 	logging.info('----------------------------------------');
 	logging.info('Define Controller Routing');
 	logging.info('----------------------------------------');
-	defineRoutes(
-		[MainController, SessionController, TherapistController, PatientController, UserController, SeriesController, TemplateController],
-		application
-	);
+	defineRoutes([MainController, SessionController, TherapistController, UserController, SeriesController, TemplateController], application);
 
 	logging.info('----------------------------------------');
 	logging.info('Define Controller Routing');
