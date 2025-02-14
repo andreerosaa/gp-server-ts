@@ -45,6 +45,8 @@ import { getTemplateById } from '../models/template';
 import { getUserByEmail, getUserById } from '../models/user';
 import { RoleEnum } from '../interfaces/user';
 import { roleHandler } from '../middleware/roleHandler';
+import { EventTypes } from '../interfaces/mail';
+import eventBus from '../events/eventBus';
 
 @Controller('/session')
 class SessionController {
@@ -440,31 +442,11 @@ class SessionController {
 				return res.status(500).json({ message: 'Error updating session' });
 			}
 
-			//FIXME: remove from here
-			const emailMessage = `<h1> Ginásio Palmeiras </h1>
-				<h3> Sessão de ${updatedSession.date.toLocaleDateString()} às ${updatedSession.date.toLocaleTimeString([], {
-				hour: '2-digit',
-				minute: '2-digit'
-			})}</h3>
-				<p> Por favor confirme a sua presença</p>
-				<p>
-					<button><a href="${server.SERVER_BASE_URL}/session/confirm/${updatedSession.id}?token=${updatedSession.confirmationToken}">
-						Clique para confirmar
-					</a><button>
-					<a href="${server.SERVER_BASE_URL}/session/cancel/${updatedSession.id}?token=${updatedSession.cancelationToken}">Clique para cancelar</a>
-				</p>`;
-			const receiver = findUserById.email;
-			const subject = 'Email de confirmação';
-			const emailService = new MailService();
+			//TODO: change event to only informative email
+			logging.log(`Event: ${EventTypes.SESSION_BOOKED}`);
+			eventBus.emit(EventTypes.SESSION_BOOKED, { session: updatedSession, email: findUserById.email });
 
-			const sent: boolean = await emailService.send({ message: emailMessage, to: receiver, subject });
-			if (sent) {
-				logging.log('Confirmation email sent successfully');
-			} else {
-				logging.log('Error sending confirmation email');
-			}
-
-			return res.status(201).json(updatedSession);
+			return res.status(200).json(updatedSession);
 		} catch (error) {
 			logging.error(error);
 			return res.status(500).json(error);

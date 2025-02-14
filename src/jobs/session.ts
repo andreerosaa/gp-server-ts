@@ -4,6 +4,8 @@ import { deleteSessionById, getSessionByQuery } from '../models/session';
 import { SessionStatusEnum } from '../interfaces/session';
 import { MailService } from '../services/mail';
 import { getUserById } from '../models/user';
+import { EventTypes } from '../interfaces/mail';
+import eventBus from '../events/eventBus';
 
 /** DELETING OLD SESSIONS */
 export const oldSessionsJob = CronJob.from({
@@ -55,25 +57,8 @@ export const confirmSessionsJob = CronJob.from({
 						if (session.status === SessionStatusEnum.PENDING && session.userId && session.userId.length > 0) {
 							const user = await getUserById(session.userId);
 							if (user) {
-								const emailMessage = `
-										<h1> Ginásio Palmeiras </h1>
-										<h1> Sessão de ${session.date.toLocaleDateString()} às ${session.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</h1>
-										<p> Por favor confirme a sua presença</p>
-										<p><a href="${server.SERVER_BASE_URL}/session/confirm/${session.id}?token=${session.confirmationToken}">Clique para confirmar</a></p>
-				                        <p><a href="${server.SERVER_BASE_URL}/session/cancel/${session.id}?token=${
-									session.cancelationToken
-								}">Clique para cancelar</a></p>
-									`;
-								const receiver = user.email;
-								const subject = 'Email de confirmação';
-								const emailService = new MailService();
-
-								const sent: boolean = await emailService.send({ message: emailMessage, to: receiver, subject });
-								if (sent) {
-									logging.log('Confirmation email sent successfully');
-								} else {
-									logging.log('Error sending confirmation email');
-								}
+								logging.log(`Event: ${EventTypes.SESSION_BOOKED}`);
+								eventBus.emit(EventTypes.SESSION_BOOKED, { session: session, email: user.email });
 							}
 						}
 					} catch (error) {
