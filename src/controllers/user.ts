@@ -39,6 +39,33 @@ class UserController {
 		return res.status(200).json(req.mongoGet);
 	}
 
+	@Route('get', '/me/:id', authorizationHandler)
+	async getPersonalDataById(req: Request, res: Response, next: NextFunction) {
+		try {
+			const userIdToken = req.sub;
+			const userRole = req.role;
+
+			if (!userIdToken || !userRole) {
+				return res.sendStatus(400);
+			}
+
+			if (userRole === RoleEnum.PATIENT && req.params.id !== userIdToken) {
+				return res.status(403).json({ message: 'User is not allowed to retrieve information from other users' });
+			}
+
+			const findUser = await getUserById(req.params.id);
+
+			if (!findUser) {
+				return res.status(404).json({ message: 'User not found' });
+			}
+
+			return res.status(200).json(findUser).end();
+		} catch (error) {
+			logging.error(error);
+			return res.status(500).json(error);
+		}
+	}
+
 	@Route('get', '/code/:id')
 	async getVerificationCode(req: Request, res: Response, next: NextFunction) {
 		try {
