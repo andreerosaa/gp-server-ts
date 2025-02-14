@@ -1,8 +1,7 @@
 import { CronJob } from 'cron';
-import { cron, server } from '../config/config';
+import { cron } from '../config/config';
 import { deleteSessionById, getSessionByQuery } from '../models/session';
 import { SessionStatusEnum } from '../interfaces/session';
-import { MailService } from '../services/mail';
 import { getUserById } from '../models/user';
 import { EventTypes } from '../interfaces/mail';
 import eventBus from '../events/eventBus';

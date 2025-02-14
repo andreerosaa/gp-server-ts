@@ -20,7 +20,6 @@ import jwt from 'jsonwebtoken';
 import { auth, PRODUCTION } from '../config/config';
 import { authorizationHandler } from '../middleware/authorizationHandler';
 import { Validate } from '../decorators/validate';
-import { MailService } from '../services/mail';
 import { loginLimitHandler } from '../middleware/loginLimitHandler';
 import { RoleEnum } from '../interfaces/user';
 import { roleHandler } from '../middleware/roleHandler';

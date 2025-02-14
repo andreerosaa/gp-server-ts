@@ -33,8 +33,7 @@ import {
 	searchSessionByDateRequestValidation,
 	SessionStatusEnum
 } from '../interfaces/session';
-import { MailService } from '../services/mail';
-import { auth, client, MAX_SESSIONS_USER_PER_DAY, server, SESSION_SERIES_LENGTH } from '../config/config';
+import { auth, client, MAX_SESSIONS_USER_PER_DAY, SESSION_SERIES_LENGTH } from '../config/config';
 import jwt from 'jsonwebtoken';
 import { authorizationHandler } from '../middleware/authorizationHandler';
 import { getTherapistById } from '../models/therapist';
@@ -42,7 +41,7 @@ import { Validate } from '../decorators/validate';
 import { computerDatesByRecurrence } from '../helpers/recurrence';
 import { createSeries, deleteSeriesById, getSeriesById } from '../models/series';
 import { getTemplateById } from '../models/template';
-import { getUserByEmail, getUserById } from '../models/user';
+import { getUserById } from '../models/user';
 import { RoleEnum } from '../interfaces/user';
 import { roleHandler } from '../middleware/roleHandler';
 import { EventTypes } from '../interfaces/mail';
