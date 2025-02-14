@@ -135,7 +135,15 @@ class SessionController {
 			}
 
 			if (session.status === SessionStatusEnum.AVAILABLE) {
-				return res.status(403).json({ message: 'Session already canceled' });
+				return res.status(403).json({ message: 'Session already reopened' });
+			}
+
+			if (session.status === SessionStatusEnum.CANCELED || session.status === SessionStatusEnum.COMPLETED) {
+				return res.status(403).json({ message: 'Session already canceled or completed' });
+			}
+
+			if (session.status === SessionStatusEnum.CONFIRMED) {
+				return res.status(403).json({ message: 'Session already confirmed' });
 			}
 
 			const updateSessionRequest = {
