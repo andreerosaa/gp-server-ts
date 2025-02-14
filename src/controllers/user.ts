@@ -24,6 +24,8 @@ import { MailService } from '../services/mail';
 import { loginLimitHandler } from '../middleware/loginLimitHandler';
 import { RoleEnum } from '../interfaces/user';
 import { roleHandler } from '../middleware/roleHandler';
+import eventBus from '../events/eventBus';
+import { EventTypes } from '../interfaces/mail';
 
 @Controller('/user')
 class UserController {
@@ -170,17 +172,8 @@ class UserController {
 				password: hashedPassword
 			});
 
-			//TODO: add event to queue and handle sending emails with event handlers
-			const emailMessage = `
-						<h1> Ginásio Palmeiras </h1>
-						<p> O seu código de verificação é: ${verificationCode} </p>
-					`;
-			const receiver = email;
-			const subject = `Código de verificação: ${verificationCode}`;
-
-			const emailService = new MailService();
-			const sent: boolean = await emailService.send({ message: emailMessage, to: receiver, subject });
-			logging.log(sent ? 'Verification code created successfully' : 'Error sending verification code');
+			logging.log(`Event: ${EventTypes.USER_REGISTERED}`);
+			eventBus.emit(EventTypes.USER_REGISTERED, { email: user.email, code: user.verificationCode });
 
 			return res.status(200).json({ id: user._id, email: user.email }).end();
 		} catch (error) {

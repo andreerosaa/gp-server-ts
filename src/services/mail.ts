@@ -27,11 +27,15 @@ export class MailService {
 
 		try {
 			await transporter.sendMail(mailOptions);
-			logging.log('Email sent successfully to: ', to);
+			logging.log(`Email sent to: ${to}`);
 			return true;
 		} catch (error) {
-			logging.error('Error sending email ', error);
+			logging.error(`Error sending email to: ${to}\n error: ${error}`);
 			return false;
 		}
 	}
 }
+
+const mailService = new MailService();
+
+export default mailService;

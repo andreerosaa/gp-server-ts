@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import 'reflect-metadata';
 import './config/logging';
+import './events/emailEventListener';
 import { loggingHandler } from './middleware/loggingHandler';
 import { corsHandler } from './middleware/corsHandler';
 import { routeNotFound } from './middleware/routeNotFound';
