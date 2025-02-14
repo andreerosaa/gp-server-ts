@@ -91,19 +91,16 @@ class UserController {
 
 			const updateVerificationCodeUser = await updateUserById(req.params.id, newVerificationRequest);
 
-			logging.log('Verification code created successfully', updateVerificationCodeUser);
+			if (updateVerificationCodeUser) {
+				logging.log('User verification code updated: ', updateVerificationCodeUser.verificationCode);
+			}
 
-			//FIXME: cleanup or separate responsibilities of this part
-			const emailMessage = `
-						<h1> Ginásio Palmeiras </h1>
-						<p> O seu código de verificação é: ${newVerificationRequest.verificationCode} </p>
-					`;
-			const receiver = findUser.email;
-			const subject = `Código de verificação: ${newVerificationRequest.verificationCode}`;
+			logging.log(`Event: ${EventTypes.NEW_VERIFICATION_CODE}`);
+			eventBus.emit(EventTypes.NEW_VERIFICATION_CODE, {
+				email: updateVerificationCodeUser?.email,
+				code: newVerificationRequest.verificationCode
+			});
 
-			const emailService = new MailService();
-			const sent: boolean = await emailService.send({ message: emailMessage, to: receiver, subject });
-			logging.log(sent ? 'Verification code created successfully' : 'Error sending verification code');
 			return res.status(200).end();
 		} catch (error) {
 			logging.error(error);
@@ -175,7 +172,7 @@ class UserController {
 			logging.log(`Event: ${EventTypes.USER_REGISTERED}`);
 			eventBus.emit(EventTypes.USER_REGISTERED, { email: user.email, code: user.verificationCode });
 
-			return res.status(200).json({ id: user._id, email: user.email }).end();
+			return res.status(201).json({ id: user._id, email: user.email }).end();
 		} catch (error) {
 			logging.error(error);
 			return res.status(400).json({ error: error });
