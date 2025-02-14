@@ -56,8 +56,8 @@ export const confirmSessionsJob = CronJob.from({
 						if (session.status === SessionStatusEnum.PENDING && session.userId && session.userId.length > 0) {
 							const user = await getUserById(session.userId);
 							if (user) {
-								logging.log(`Event: ${EventTypes.SESSION_BOOKED}`);
-								eventBus.emit(EventTypes.SESSION_BOOKED, { session: session, email: user.email });
+								logging.log(`Event: ${EventTypes.CONFIRMATION_EMAIL}`);
+								eventBus.emit(EventTypes.CONFIRMATION_EMAIL, { session: session, email: user.email });
 							}
 						}
 					} catch (error) {

@@ -29,6 +29,23 @@ eventBus.on(EventTypes.SESSION_BOOKED, async ({ session, email }: SessionBookedE
 		hour: '2-digit',
 		minute: '2-digit'
 	})}</h3>
+    <p> Será enviado um email de confirmação 1 dia antes da sessão</p>`;
+
+	const to = email;
+	const subject = `Sessão reservada para ${session.date.toLocaleDateString()} às ${session.date.toLocaleTimeString([], {
+		hour: '2-digit',
+		minute: '2-digit'
+	})}`;
+
+	await mailService.send({ to: to, subject: subject, message: message });
+});
+
+eventBus.on(EventTypes.CONFIRMATION_EMAIL, async ({ session, email }: SessionBookedEventPayload) => {
+	const message = `<h1> Ginásio Palmeiras </h1>
+				<h3> Sessão de ${session.date.toLocaleDateString()} às ${session.date.toLocaleTimeString([], {
+		hour: '2-digit',
+		minute: '2-digit'
+	})}</h3>
     <p> Por favor confirme a sua presença</p>
     <p>
         <button><a href="${server.SERVER_BASE_URL}/session/confirm/${session._id}?token=${session.confirmationToken}">
