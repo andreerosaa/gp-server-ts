@@ -6,14 +6,14 @@ import { RoleEnum } from '../interfaces/user';
 declare global {
 	namespace Express {
 		interface Request {
-			email?: string;
+			sub?: string;
 			role?: RoleEnum;
 		}
 	}
 }
 
 interface JwtPayload {
-	email: string;
+	sub: string;
 	role: RoleEnum;
 }
 
@@ -27,7 +27,7 @@ export function authorizationHandler(req: Request, res: Response, next: NextFunc
 		try {
 			const decoded = jwt.verify(token, auth.JWT_SECRET as jwt.Secret) as JwtPayload;
 
-			req.email = decoded.email;
+			req.sub = decoded.sub;
 			req.role = decoded.role;
 
 			next();

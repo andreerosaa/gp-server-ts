@@ -189,10 +189,10 @@ class UserController {
 			}
 
 			// Generate JWT token
-			const accessToken = jwt.sign({ email: existingUser.email, role: existingUser.role }, auth.JWT_SECRET as jwt.Secret, {
+			const accessToken = jwt.sign({ sub: existingUser._id, role: existingUser.role }, auth.JWT_SECRET as jwt.Secret, {
 				expiresIn: '5m'
 			});
-			const refreshToken = jwt.sign({ email: existingUser.email, role: existingUser.role }, auth.JWT_REFRESH_TOKEN_SECRET as jwt.Secret, {
+			const refreshToken = jwt.sign({ sub: existingUser._id, role: existingUser.role }, auth.JWT_REFRESH_TOKEN_SECRET as jwt.Secret, {
 				expiresIn: '1h'
 			});
 

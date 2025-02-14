@@ -371,16 +371,16 @@ class SessionController {
 	@Validate(bookSessionRequestValidation)
 	async book(req: Request<any, any, IBookSessionRequest>, res: Response, next: NextFunction) {
 		try {
-			const { email } = req.body;
-			const userEmail = req.email;
+			const { userId } = req.body;
+			const userIdToken = req.sub;
 			const userRole = req.role;
 
-			if (!email || !userEmail || !userRole) {
+			if (!userId || !userIdToken || !userRole) {
 				return res.sendStatus(400);
 			}
 
-			if (userRole === RoleEnum.PATIENT && userEmail !== email) {
-				return res.status(403).json({ message: 'Email does not match the user email' });
+			if (userRole === RoleEnum.PATIENT && userId !== userIdToken) {
+				return res.status(403).json({ message: 'User cannot book for other users' });
 			}
 
 			const session = await getSessionById(req.params.id);
@@ -392,13 +392,13 @@ class SessionController {
 				return res.status(403).json({ message: 'Session is not available' });
 			}
 
-			const findUserByEmail = await getUserByEmail(email);
+			const findUserById = await getUserById(userId);
 
-			if (!findUserByEmail) {
+			if (!findUserById) {
 				return res.status(404).json({ message: 'User not found' });
 			}
 
-			if (!findUserByEmail.verified) {
+			if (!findUserById.verified) {
 				return res.status(403).json({ message: 'Unverified user' });
 			}
 
@@ -409,7 +409,7 @@ class SessionController {
 			endOfDay.setUTCHours(23, 59, 59, 999);
 
 			const request = {
-				userId: findUserByEmail._id,
+				userId: findUserById._id,
 				date: {
 					$gte: startOfDay,
 					$lte: endOfDay
@@ -424,11 +424,11 @@ class SessionController {
 
 			const jwtExpiration = Math.floor((new Date(session.date).getTime() - 24 * 60 * 60 * 1000 - Date.now()) / 1000);
 
-			const confirmationToken = jwt.sign({ email: email }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
-			const cancelationToken = jwt.sign({ email: email }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
+			const confirmationToken = jwt.sign({ sub: userId }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
+			const cancelationToken = jwt.sign({ sub: userId }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
 
 			const updateSessionRequest = {
-				userId: findUserByEmail._id.toString(),
+				userId: userId,
 				status: SessionStatusEnum.PENDING,
 				confirmationToken: confirmationToken,
 				cancelationToken: cancelationToken
@@ -453,7 +453,7 @@ class SessionController {
 					</a><button>
 					<a href="${server.SERVER_BASE_URL}/session/cancel/${updatedSession.id}?token=${updatedSession.cancelationToken}">Clique para cancelar</a>
 				</p>`;
-			const receiver = findUserByEmail.email;
+			const receiver = findUserById.email;
 			const subject = 'Email de confirmação';
 			const emailService = new MailService();
 

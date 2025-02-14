@@ -26,11 +26,11 @@ export interface ISessionByDate extends BaseModel {
 }
 
 export interface IBookSessionRequest {
-	email: string;
+	userId: string;
 }
 
 export const bookSessionRequestValidation = Joi.object({
-	email: Joi.string().email().required()
+	userId: Joi.string().required()
 });
 
 export interface ISearchSessionByDate {
