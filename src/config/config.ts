@@ -41,10 +41,10 @@ export const auth = {
 export const cron = {
 	CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS,
 	CRON_JOB_DELETE_SESSIONS_CONFIG: `0 */${CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS} * * * `, // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
-	// CRON_JOB_DELETE_SESSIONS_CONFIG: `*/1 * * * * `, //FIXME: remove, for testing purposes only every minute
+	// CRON_JOB_DELETE_SESSIONS_CONFIG: `*/1 * * * * `, //FIXME: remove, for testing purposes only - every minute
 	CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS,
 	CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `0 */${CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS} * * * ` // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
-	// CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `*/1 * * * * ` //FIXME: remove, for testing purposes only every minute
+	// CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `*/1 * * * * ` //FIXME: remove, for testing purposes only - every minute
 };
 
 export const mongo = {

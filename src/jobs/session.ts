@@ -11,16 +11,19 @@ export const oldSessionsJob = CronJob.from({
 	cronTime: cron.CRON_JOB_DELETE_SESSIONS_CONFIG,
 	onTick: async () => {
 		try {
-			logging.info('Filtering older sessions');
+			logging.info('Deleting 1 year old sessions');
 
-			const request = { date: { $lte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) } };
+			const yearFromNow = new Date();
+			yearFromNow.setFullYear(yearFromNow.getFullYear() - 1);
+
+			const request = { date: { $lte: yearFromNow } };
 			const response = await getSessionByQuery(request);
 
 			if (response.length > 0) {
 				response.forEach(async (session) => {
 					try {
 						await deleteSessionById(session._id.toString());
-						logging.log(`Successfully deleted session with id: ${session._id}`);
+						logging.log(`Session deleted: ${session._id}`);
 					} catch (error) {
 						logging.error(error);
 					}
