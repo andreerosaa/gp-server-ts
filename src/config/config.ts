@@ -10,23 +10,23 @@ export const TEST = process.env.NODE_ENV === 'test';
 export const JWT_SECRET = process.env.JWT_SECRET;
 export const JWT_REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET;
 
-export const CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS = process.env.CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS || 1;
-export const CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS = process.env.CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS || 1;
+export const CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS = process.env.CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS ?? 1;
+export const CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS = process.env.CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS ?? 1;
 
-export const MONGO_USER = process.env.MONGO_USER || '';
-export const MONGO_PASSWORD = process.env.MONGO_PASSWORD || '';
-export const MONGO_URL = process.env.MONGO_URL || '';
-export const MONGO_DATABASE = process.env.MONGO_USER || '';
+export const MONGO_USER = process.env.MONGO_USER ?? '';
+export const MONGO_PASSWORD = process.env.MONGO_PASSWORD ?? '';
+export const MONGO_URL = process.env.MONGO_URL ?? '';
+export const MONGO_DATABASE = process.env.MONGO_USER ?? '';
 export const MONGO_OPTIONS: mongoose.ConnectOptions = { retryWrites: true, w: 'majority' };
 
-export const GOOGLE_EMAIL = process.env.GOOGLE_EMAIL || '';
-export const GOOGLE_PASSWORD = process.env.GOOGLE_PASSWORD || '';
+export const GOOGLE_EMAIL = process.env.GOOGLE_EMAIL ?? '';
+export const GOOGLE_PASSWORD = process.env.GOOGLE_PASSWORD ?? '';
 
-export const SERVER_HOSTNAME = process.env.SERVER_HOSTNAME || 'localhost';
+export const SERVER_HOSTNAME = process.env.SERVER_HOSTNAME ?? 'localhost';
 export const SERVER_PORT = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 3000;
-export const SERVER_CORS_ALLOWED_ORIGINS: string[] = process.env.SERVER_CORS_ALLOWED_ORIGINS?.split(', ') || [];
+export const SERVER_CORS_ALLOWED_ORIGINS: string[] = process.env.SERVER_CORS_ALLOWED_ORIGINS?.split(', ') ?? [];
 
-export const CLIENT_HOSTNAME = process.env.CLIENT_HOSTNAME || 'localhost';
+export const CLIENT_HOSTNAME = process.env.CLIENT_HOSTNAME ?? 'localhost';
 export const CLIENT_PORT = process.env.CLIENT_PORT ? Number(process.env.CLIENT_PORT) : 4200;
 
 export const SESSION_SERIES_LENGTH = process.env.SESSION_SERIES_LENGTH ? Number(process.env.SESSION_SERIES_LENGTH) : 365;
