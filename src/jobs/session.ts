@@ -47,6 +47,7 @@ export const confirmSessionsJob = CronJob.from({
 
 			const dayFromNow = new Date();
 			dayFromNow.setDate(dayFromNow.getDate() + 1);
+			dayFromNow.setMinutes(dayFromNow.getMinutes(), 0, 0); // ensure seconds and milliseconds are 0
 
 			const request = {
 				date: {
