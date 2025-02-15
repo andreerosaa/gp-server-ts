@@ -451,7 +451,6 @@ class SessionController {
 				return res.status(500).json({ message: 'Error updating session' });
 			}
 
-			//TODO: change event to only informative email
 			logging.log(`Event: ${EventTypes.SESSION_BOOKED}`);
 			eventBus.emit(EventTypes.SESSION_BOOKED, { session: updatedSession, email: findUserById.email });
 
@@ -569,6 +568,7 @@ class SessionController {
 	@Route('patch', '/update/:id', authorizationHandler, roleHandler(RoleEnum.ADMIN))
 	@MongoUpdate(Session)
 	update(req: Request, res: Response, next: NextFunction) {
+		//TODO: send email to patient if has patient (Event)
 		return res.status(201).json(req.mongoUpdate);
 	}
 
