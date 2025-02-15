@@ -15,7 +15,7 @@ import SessionController from './controllers/session';
 import TherapistController from './controllers/therapist';
 import UserController from './controllers/user';
 import { rateLimitHandler } from './middleware/rateLimitHandler';
-import { confirmSessionsJob, oldSessionsJob } from './jobs/session';
+import { completeSessionsJob, confirmSessionsJob, oldSessionsJob } from './jobs/session';
 import cookieParser from 'cookie-parser';
 import SeriesController from './controllers/series';
 import TemplateController from './controllers/template';
@@ -83,6 +83,9 @@ export const Main = async () => {
 
 	/** SENDING SESSION CONFIRMATION EMAILS */
 	confirmSessionsJob.start();
+
+	/** COMPLETE SESSIONS */
+	completeSessionsJob.start();
 };
 
 export const Shutdown = (callback: any) => httpServer?.close(callback);

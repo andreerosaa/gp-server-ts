@@ -12,6 +12,7 @@ export const JWT_REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET;
 
 export const CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS = process.env.CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS ?? 1;
 export const CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS = process.env.CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS ?? 1;
+export const CRON_JOB_COMPLETE_SESSIONS_PERIODICITY_MINUTES = process.env.CRON_JOB_COMPLETE_SESSIONS_PERIODICITY_MINUTES ?? 1;
 
 export const MONGO_USER = process.env.MONGO_USER ?? '';
 export const MONGO_PASSWORD = process.env.MONGO_PASSWORD ?? '';
@@ -43,7 +44,10 @@ export const cron = {
 	CRON_JOB_DELETE_SESSIONS_CONFIG: `0 */${CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS} * * * `, // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
 	// CRON_JOB_DELETE_SESSIONS_CONFIG: `*/1 * * * * `, //FIXME: remove, for testing purposes only - every minute
 	CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS,
-	CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `0 */${CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS} * * * ` // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
+	CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `0 */${CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS} * * * `, // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
+	// CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `*/1 * * * * ` //FIXME: remove, for testing purposes only - every minute
+	CRON_JOB_COMPLETE_SESSIONS_PERIODICITY_MINUTES,
+	CRON_JOB_COMPLETE_SESSIONS_CONFIG: `*/${CRON_JOB_COMPLETE_SESSIONS_PERIODICITY_MINUTES} * * * * ` // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
 	// CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `*/1 * * * * ` //FIXME: remove, for testing purposes only - every minute
 };
 

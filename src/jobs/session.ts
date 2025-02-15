@@ -1,6 +1,6 @@
 import { CronJob } from 'cron';
 import { cron } from '../config/config';
-import { deleteSessionById, getSessionByQuery } from '../models/session';
+import { deleteSessionById, getSessionByQuery, updateSessionById } from '../models/session';
 import { SessionStatusEnum } from '../interfaces/session';
 import { getUserById } from '../models/user';
 import { EventTypes } from '../interfaces/mail';
@@ -61,6 +61,44 @@ export const confirmSessionsJob = CronJob.from({
 							if (user) {
 								logging.log(`Event: ${EventTypes.CONFIRMATION_EMAIL}`);
 								eventBus.emit(EventTypes.CONFIRMATION_EMAIL, { session: session, email: user.email });
+							}
+						}
+					} catch (error) {
+						logging.error(error);
+					}
+				});
+			}
+			return;
+		} catch (error) {
+			logging.error(error);
+		}
+	},
+	start: true,
+	timeZone: 'system'
+});
+
+/** COMPLETE SESSIONS */
+export const completeSessionsJob = CronJob.from({
+	cronTime: cron.CRON_JOB_COMPLETE_SESSIONS_CONFIG,
+	onTick: async () => {
+		try {
+			const now = new Date();
+
+			const request = {
+				status: { $ne: SessionStatusEnum.COMPLETED },
+				$expr: {
+					$lt: [{ $add: ['$date', { $multiply: ['$durationInMinutes', 60 * 1000] }] }, now]
+				}
+			};
+			const response = await getSessionByQuery(request);
+
+			if (response.length > 0) {
+				response.forEach(async (session) => {
+					try {
+						if (session.status !== SessionStatusEnum.COMPLETED) {
+							const updatedSession = await updateSessionById(session._id.toString(), { status: SessionStatusEnum.COMPLETED });
+							if (updatedSession) {
+								logging.log('Session completed: ', updatedSession._id.toString());
 							}
 						}
 					} catch (error) {
