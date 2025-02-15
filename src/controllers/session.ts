@@ -347,7 +347,7 @@ class SessionController {
 				return res.status(200).json(allSessionsInMonth);
 			}
 
-			const dayStatusByMonth: DayStatusByMonth = { available: [], pending: [], full: [] };
+			const dayStatusByMonth: DayStatusByMonth = { available: [], pending: [], full: [], completed: [] };
 
 			// Group sessions by date
 			const groupedByDate = allSessionsInMonth.reduce((acc: { [key: number]: ISession[] }, session) => {
@@ -364,8 +364,10 @@ class SessionController {
 					dayStatusByMonth.available.push(sessions[0].date);
 				} else if (sessions.some((s) => s.status === SessionStatusEnum.PENDING)) {
 					dayStatusByMonth.pending.push(new Date(sessions[0].date));
-				} else {
+				} else if (sessions.some((s) => s.status === SessionStatusEnum.CONFIRMED)) {
 					dayStatusByMonth.full.push(new Date(sessions[0].date));
+				} else {
+					dayStatusByMonth.completed.push(new Date(sessions[0].date));
 				}
 			}
 

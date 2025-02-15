@@ -55,6 +55,7 @@ export interface DayStatusByMonth {
 	available: Date[]; //at least one available
 	pending: Date[]; //at least one pending
 	full: Date[]; //none available
+	completed: Date[]; //all sessions completed
 }
 
 export enum SessionStatusEnum {
