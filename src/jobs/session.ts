@@ -45,12 +45,16 @@ export const confirmSessionsJob = CronJob.from({
 		try {
 			logging.info('Sending session confirmation emails');
 
+			const dayFromNow = new Date();
+			dayFromNow.setDate(dayFromNow.getDate() + 1);
+
 			const request = {
 				date: {
-					$gte: new Date(new Date().getTime()),
-					$lte: new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
+					$gte: dayFromNow,
+					$lte: new Date(dayFromNow.getTime() + 60 * 60 * 1000)
 				}
 			};
+
 			const response = await getSessionByQuery(request);
 
 			if (response.length > 0) {

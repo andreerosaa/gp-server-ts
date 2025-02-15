@@ -41,13 +41,16 @@ export const auth = {
 
 export const cron = {
 	CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS,
-	CRON_JOB_DELETE_SESSIONS_CONFIG: `0 */${CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS} * * * `, // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
+	CRON_JOB_DELETE_SESSIONS_CONFIG: `0 */${CRON_JOB_DELETE_SESSIONS_PERIODICITY_HOURS} * * * `, // every x hours depending on config value
 	// CRON_JOB_DELETE_SESSIONS_CONFIG: `*/1 * * * * `, //FIXME: remove, for testing purposes only - every minute
+
 	CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS,
-	CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `0 */${CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS} * * * `, // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
-	// CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `*/1 * * * * ` //FIXME: remove, for testing purposes only - every minute
+	// CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `0 */${CRON_JOB_CONFIRMATION_EMAILS_PERIODICITY_HOURS} * * * `, // every x hours depending on config value
+	CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `0 * * * * `, // every hour on the 0th minute
+	// CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `*/1 * * * * `, //FIXME: remove, for testing purposes only - every minute
+
 	CRON_JOB_COMPLETE_SESSIONS_PERIODICITY_MINUTES,
-	CRON_JOB_COMPLETE_SESSIONS_CONFIG: `*/${CRON_JOB_COMPLETE_SESSIONS_PERIODICITY_MINUTES} * * * * ` // <minute> <hour> <day-of-month> <month> <day-of-week> <command>
+	CRON_JOB_COMPLETE_SESSIONS_CONFIG: `*/${CRON_JOB_COMPLETE_SESSIONS_PERIODICITY_MINUTES} * * * * ` // every x minutes depending on config value
 	// CRON_JOB_CONFIRMATION_EMAILS_CONFIG: `*/1 * * * * ` //FIXME: remove, for testing purposes only - every minute
 };
 
