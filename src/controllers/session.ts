@@ -327,9 +327,9 @@ class SessionController {
 				return res.sendStatus(400);
 			}
 
-			const startOfMonth = new Date(year, month, 1);
+			const startOfMonth = new Date(Date.UTC(year, month, 1));
 
-			const endOfMonth = new Date(year, month + 1, 0);
+			const endOfMonth = new Date(Date.UTC(year, month + 1, 0));
 			endOfMonth.setUTCHours(23, 59, 59, 999);
 
 			const request = {
@@ -338,6 +338,7 @@ class SessionController {
 					$lte: endOfMonth
 				}
 			};
+
 			const allSessionsInMonth = await getSessionByQuery(request);
 
 			if (!allSessionsInMonth) {
