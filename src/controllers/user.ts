@@ -251,13 +251,13 @@ class UserController {
 				return res.status(400).json({ message: 'Refresh token not found' });
 			}
 
-			const verifyRefreshToken = <{ email: string; role: RoleEnum }>jwt.verify(refreshToken, auth.JWT_REFRESH_TOKEN_SECRET as jwt.Secret);
+			const verifyRefreshToken = <{ sub: string; role: RoleEnum }>jwt.verify(refreshToken, auth.JWT_REFRESH_TOKEN_SECRET as jwt.Secret);
 
 			if (!verifyRefreshToken) {
 				return res.status(403).json({ message: 'Invalid refresh token' });
 			}
 
-			const accessToken = jwt.sign({ email: verifyRefreshToken.email, role: verifyRefreshToken.role }, auth.JWT_SECRET as jwt.Secret, {
+			const accessToken = jwt.sign({ sub: verifyRefreshToken.sub, role: verifyRefreshToken.role }, auth.JWT_SECRET as jwt.Secret, {
 				expiresIn: '5m'
 			});
 
