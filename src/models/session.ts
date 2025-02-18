@@ -59,7 +59,7 @@ export const sessionValidation = Joi.object({
 	userId: Joi.string().id(),
 	durationInMinutes: Joi.number().required(),
 	vacancies: Joi.number().required(),
-	status: Joi.number().required(),
+	status: Joi.string().valid('available', 'pending', 'confirmed', 'completed', 'canceled').required(),
 	seriesId: Joi.string(),
 	confirmationToken: Joi.string(),
 	cancelationToken: Joi.string()

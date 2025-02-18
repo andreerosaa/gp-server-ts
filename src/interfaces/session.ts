@@ -91,7 +91,7 @@ export const createRecurringSessionValidation = Joi.object({
 	durationInMinutes: Joi.number().required(),
 	vacancies: Joi.number().required(),
 	recurrence: Joi.number().required(),
-	status: Joi.number().required()
+	status: Joi.string().valid('available', 'pending', 'confirmed', 'completed', 'canceled').required()
 });
 
 export const createFromTemplateValidation = Joi.object({

@@ -23,7 +23,7 @@ export const computerDatesByRecurrence = (startDate: Date, recurrence: SessionRe
 				computedDates.push(computedDate);
 				break;
 			case SessionRecurrenceEnum.MONTHLY:
-				computedDate.setMonth(computedDate.getMonth() + 1);
+				computedDate = new Date(computedDate.setMonth(computedDate.getMonth() + 1));
 				computedDates.push(computedDate);
 				break;
 		}

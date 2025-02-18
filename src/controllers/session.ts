@@ -46,6 +46,7 @@ import { RoleEnum } from '../interfaces/user';
 import { roleHandler } from '../middleware/roleHandler';
 import { EventTypes } from '../interfaces/mail';
 import eventBus from '../events/eventBus';
+import { isToday } from '../helpers/date';
 
 @Controller('/session')
 class SessionController {
@@ -435,8 +436,8 @@ class SessionController {
 
 			const jwtExpiration = Math.floor((new Date(session.date).getTime() - 24 * 60 * 60 * 1000 - Date.now()) / 1000);
 
-			const confirmationToken = jwt.sign({ sub: userId }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
-			const cancelationToken = jwt.sign({ sub: userId }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
+			const confirmationToken = jwt.sign({ sub: userId, sessionId: session._id }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
+			const cancelationToken = jwt.sign({ sub: userId, sessionId: session._id }, auth.JWT_SECRET as jwt.Secret, { expiresIn: jwtExpiration });
 
 			const updateSessionRequest = {
 				userId: userId,
@@ -451,8 +452,13 @@ class SessionController {
 				return res.status(500).json({ message: 'Error updating session' });
 			}
 
-			logging.log(`Event: ${EventTypes.SESSION_BOOKED}`);
-			eventBus.emit(EventTypes.SESSION_BOOKED, { session: updatedSession, email: findUserById.email });
+			if (isToday(updatedSession.date)) {
+				logging.log(`Event: ${EventTypes.CONFIRMATION_EMAIL}`);
+				eventBus.emit(EventTypes.CONFIRMATION_EMAIL, { session: updatedSession, email: findUserById.email });
+			} else {
+				logging.log(`Event: ${EventTypes.SESSION_BOOKED}`);
+				eventBus.emit(EventTypes.SESSION_BOOKED, { session: updatedSession, email: findUserById.email });
+			}
 
 			return res.status(200).json(updatedSession);
 		} catch (error) {
@@ -544,7 +550,7 @@ class SessionController {
 					const newDate = new Date(date);
 					const newTime = new Date(time.toLocaleString());
 
-					return new Date(newDate.setHours(newTime.getHours(), newTime.getMinutes()));
+					return new Date(newDate.setHours(newTime.getHours(), newTime.getMinutes(), 0, 0));
 				})
 				.filter((date) => date > now);
 
