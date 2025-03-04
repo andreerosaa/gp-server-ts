@@ -186,10 +186,8 @@ class SessionController {
 			}
 
 			const startOfDay = new Date(date);
-			startOfDay.setUTCHours(0, 0, 0, 0);
 
-			const endOfDay = new Date(date);
-			endOfDay.setUTCHours(23, 59, 59, 999);
+			const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
 			const request = {
 				date: {
@@ -244,10 +242,8 @@ class SessionController {
 			}
 
 			const startOfDay = new Date(date);
-			startOfDay.setUTCHours(0, 0, 0, 0);
 
-			const endOfDay = new Date(date);
-			endOfDay.setUTCHours(23, 59, 59, 999);
+			const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
 			const request = {
 				date: {
